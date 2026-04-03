@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Brain } from "lucide-react";
+import { ArrowUp, Brain } from "lucide-react";
 import { QUEENS_ANSWERS_DRAFT_STORAGE_KEY } from "@/constants/queens-answers";
 
 const GRADE_COLORS: Record<string, string> = {
@@ -391,7 +391,9 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
 
       {/* Input bar */}
       <div
-        className={`flex items-center gap-2 bg-gray-100/80 dark:bg-white/[0.04] rounded-full ${compact ? "px-3 py-1.5" : "px-4 py-2.5"}`}
+        className={`flex items-center gap-1.5 rounded-[1.35rem] border border-white/70 bg-white/65 shadow-[0_1px_3px_rgba(0,48,95,0.06)] backdrop-blur-sm transition-[box-shadow,border-color] focus-within:border-brand-red/35 focus-within:ring-2 focus-within:ring-brand-red/15 dark:border-white/[0.1] dark:bg-white/[0.06] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)] dark:focus-within:ring-brand-red/25 ${
+          compact ? "px-2.5 py-1" : "px-3 py-1.5"
+        }`}
       >
         <input
           type="text"
@@ -405,26 +407,23 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
           }}
           placeholder="Ask about any course or professor…"
           aria-label="Ask about any course or professor"
-          className={`min-w-0 flex-1 bg-transparent outline-none select-text placeholder:text-gray-400 text-brand-navy dark:text-white ${inputText} ${inputPad}`}
+          className={`min-h-0 min-w-0 flex-1 bg-transparent py-1 outline-none select-text placeholder:text-gray-400 text-brand-navy dark:text-white ${inputText} ${inputPad}`}
         />
         <button
           type="button"
           onClick={goToQueensAnswers}
           aria-label="Go to Queen's Answers"
-          className={`${compact ? "w-5 h-5" : "w-7 h-7"} shrink-0 rounded-full bg-brand-red flex items-center justify-center`}
+          className={`flex shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-sm shadow-brand-red/25 transition-[transform,background-color,box-shadow] hover:bg-[#c01f2e] hover:shadow-md hover:shadow-brand-red/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red active:scale-[0.96] ${
+            compact ? "h-7 w-7" : "h-9 w-9"
+          }`}
         >
-          <svg
-            viewBox="0 0 20 20"
-            fill="white"
-            className={compact ? "w-2.5 h-2.5" : "w-3.5 h-3.5"}
+          <ArrowUp
+            className={compact ? "h-3.5 w-3.5" : "h-[18px] w-[18px]"}
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
             aria-hidden
-          >
-            <path
-              fillRule="evenodd"
-              d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
+          />
         </button>
       </div>
     </div>

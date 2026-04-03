@@ -5,7 +5,7 @@ import { createPortal } from "react-dom"
 import { motion, useAnimation, AnimatePresence } from "framer-motion"
 import { usePathname, useSearchParams } from "next/navigation"
 import { QUEENS_ANSWERS_DRAFT_STORAGE_KEY } from "@/constants/queens-answers"
-import { Bot, Search, MessageSquare, Target } from "lucide-react"
+import { ArrowUp, Bot, Search, MessageSquare, Target } from "lucide-react"
 import { useMotionTier } from "@/lib/motion-prefs"
 import { useAuth } from "@/lib/auth/auth-context"
 import { buildAuthHref } from "@/lib/auth/safe-redirect"
@@ -219,24 +219,25 @@ function AIFeatures() {
 
         {/* Ask a Question Input at the bottom */}
         <div
-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 w-[min(100%-2rem,36rem)] max-w-xl flex items-center box-border rounded-full px-4 py-3
-            [transition-property:background-color,border-color,opacity] duration-[420ms] ease-in-out
+          className={`group/composer fixed bottom-8 left-1/2 -translate-x-1/2 w-[min(100%-2rem,36rem)] max-w-xl flex items-center gap-1 box-border rounded-[2rem] pl-5 pr-1.5 py-1.5
+            [transition-property:background-color,border-color,box-shadow,opacity,ring-color] duration-[420ms] ease-in-out
             motion-reduce:transition-none
             bg-[#fcfcfd] dark:bg-[#262626]
             border border-brand-navy/20 dark:border-white/10
             shadow-[0_2px_12px_rgba(0,48,95,0.07),0_1px_4px_rgba(0,48,95,0.045),inset_0_1px_0_rgba(255,255,255,0.92)]
             dark:shadow-[0_2px_14px_rgba(0,0,0,0.28),0_1px_4px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.06)]
+            focus-within:border-brand-red/35 focus-within:ring-2 focus-within:ring-brand-red/20 dark:focus-within:ring-brand-red/25
             ${
               showHowItWorks
                 ? "opacity-30 pointer-events-none blur-[1px]"
-                : "opacity-100 hover:shadow-[0_5px_20px_rgba(0,48,95,0.09),0_2px_6px_rgba(0,48,95,0.055),inset_0_1px_0_rgba(255,255,255,0.98)] dark:hover:shadow-[0_6px_22px_rgba(0,0,0,0.36),0_2px_8px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                : "opacity-100 hover:border-brand-navy/28 dark:hover:border-white/[0.14] hover:shadow-[0_5px_20px_rgba(0,48,95,0.09),0_2px_6px_rgba(0,48,95,0.055),inset_0_1px_0_rgba(255,255,255,0.98)] dark:hover:shadow-[0_6px_22px_rgba(0,0,0,0.36),0_2px_8px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]"
             }`}
           style={{ zIndex: 30 }}
         >
           <input
             type="text"
-            className="flex-grow bg-transparent outline-none px-2 py-2 text-lg text-[#222] dark:text-gray-100 placeholder:text-[#b0b3b8] dark:placeholder:text-gray-500 placeholder:font-medium transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
-            placeholder="Ask a question"
+            className="min-h-[44px] min-w-0 flex-1 bg-transparent outline-none py-2 pl-0 pr-2 text-base sm:text-[17px] leading-snug text-[#222] dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
+            placeholder="Ask anything about courses or professors…"
             value={question}
             readOnly={showHowItWorks || needsAuthToAsk}
             onChange={(e) => setQuestion(e.target.value)}
@@ -250,19 +251,30 @@ function AIFeatures() {
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
-                handleSubmitQuestion();
+                if (question.trim()) handleSubmitQuestion();
               }
             }}
             disabled={showHowItWorks || authLoading}
+            aria-label="Your question for Queen's Answers"
           />
           <button
             type="button"
             onClick={() => handleSubmitQuestion()}
-            className="ml-2 bg-brand-red hover:bg-red-800 text-white rounded-full w-12 h-10 flex items-center justify-center font-semibold text-lg shadow transition-[transform,background-color,box-shadow] duration-200 ease-out hover:shadow-lg hover:scale-105 motion-reduce:hover:scale-100"
-            style={{ minWidth: "48px" }}
-            disabled={showHowItWorks}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-md shadow-brand-red/25 transition-[transform,background-color,box-shadow,opacity] duration-200 ease-out hover:bg-[#c01f2e] hover:shadow-lg hover:shadow-brand-red/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red disabled:pointer-events-none disabled:opacity-35 motion-reduce:hover:scale-100 active:scale-[0.97] enabled:hover:scale-[1.04]"
+            aria-label="Send question"
+            disabled={
+              showHowItWorks ||
+              authLoading ||
+              !question.trim()
+            }
           >
-            &gt;
+            <ArrowUp
+              className="h-5 w-5"
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            />
           </button>
         </div>
       </div>
