@@ -304,9 +304,9 @@ export default function Home() {
               </h1>
 
               <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-lg leading-relaxed">
-                Make data-driven decisions with real grade distributions,
-                student reviews, and an AI assistant — all for Queen&apos;s
-                University courses.
+                Coursify helps you make smarter decisions around course
+                selection by giving you access to historical grade
+                distributions, student reviews, and an AI assistant.
               </p>
 
               <div className="flex flex-col sm:flex-row items-start gap-3 mb-8">
