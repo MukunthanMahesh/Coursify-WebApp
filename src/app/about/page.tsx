@@ -402,7 +402,7 @@ export default function About() {
               <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-7 max-w-2xl mx-auto">
                 We&apos;ve open-sourced our entire codebase so students can contribute improvements and so other schools can set up a similar platform for their own students.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-7">
+              <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 mb-7">
                 <a
                   href="https://github.com/CoursifyQU/Coursify-WebApp"
                   target="_blank"
@@ -425,10 +425,18 @@ export default function About() {
                     <span className="text-sm">Scrapers</span>
                   </span>
                 </a>
+                <a
+                  href="https://github.com/amaanjaved1/Coursify-RAG"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="liquid-btn-gold text-brand-navy dark:text-white px-7 py-3 rounded-xl inline-block font-medium w-full sm:w-auto text-center"
+                >
+                  <span className="flex items-center justify-center">
+                    <Github className="mr-2 h-4 w-4" />
+                    <span className="text-sm">RAG</span>
+                  </span>
+                </a>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Visit our <a href="https://github.com/CoursifyQU" target="_blank" rel="noopener noreferrer" className="text-brand-navy dark:text-blue-400 hover:text-brand-red dark:hover:text-red-400 font-medium transition-colors duration-200">GitHub organization</a> to see all repositories.
-              </p>
             </div>
           </div>
         </div>
