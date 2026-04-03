@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, type CSSProperties } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { useMotionTier } from "@/lib/motion-prefs";
@@ -80,22 +80,12 @@ export default function Home() {
   const motionTier = useMotionTier();
   const lite = motionTier === "lite";
 
-  const stepsRef = useRef<HTMLElement>(null);
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   const toggleAccordion = (index: number) =>
     setActiveAccordion(activeAccordion === index ? null : index);
-
-  const handleScrollClick = () => {
-    if (stepsRef.current) {
-      const y =
-        stepsRef.current.getBoundingClientRect().top + window.pageYOffset - 60;
-      window.scrollTo({ top: y, behavior: "smooth" });
-    }
-  };
 
   const steps = [
     {
@@ -385,22 +375,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        <div
-          className="absolute bottom-8 left-0 right-0 hidden md:flex justify-center cursor-pointer"
-          onClick={handleScrollClick}
-        >
-          <div className="glass-pill rounded-full p-2 hover:bg-white/70 dark:hover:bg-white/10">
-            <ChevronDown className="h-4 w-4 text-brand-red" />
-          </div>
-        </div>
       </section>
 
       {/* ═══════════════ HOW IT WORKS ═══════════════ */}
-      <section
-        ref={stepsRef}
-        className="section-glass py-12 sm:py-16 px-4 relative overflow-hidden"
-      >
+      <section className="section-glass py-12 sm:py-16 px-4 relative overflow-hidden">
         <SectionGlow
           className="left-1/2 top-12 h-80 w-80 -translate-x-1/2 blur-[155px] opacity-75"
           gradient="radial-gradient(circle, rgba(239,178,21,0.16) 0%, rgba(239,178,21,0.05) 44%, transparent 74%)"
