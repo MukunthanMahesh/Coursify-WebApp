@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useRef } from "react"
-import { Info, UploadCloud, AlertTriangle, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, Sparkles } from "lucide-react"
+import { Info, UploadCloud, AlertTriangle, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
 import { AuthModal } from "@/components/auth-modal"
 import { useAuth } from "@/lib/auth/auth-context"
 import { getSupabaseClient } from "@/lib/supabase/client"
@@ -60,7 +60,7 @@ export default function AddCoursesPage() {
 
       if (!response.ok) {
         const errorMsg = result.errors?.[0] || "Upload failed."
-        // Detect duplicate term submission — show positive UI instead of error
+        // Duplicate term submission — dedicated amber state instead of generic error
         if (errorMsg.toLowerCase().includes("already submitted")) {
           const termMatch = errorMsg.match(/for (.+?)\./i)
           setDuplicateTerm(termMatch ? termMatch[1] : null)
@@ -235,25 +235,27 @@ export default function AddCoursesPage() {
                 </div>
 
               ) : uploadPhase === "duplicate" ? (
-                /* ── DUPLICATE state — already contributed ── */
-                <div className="flex flex-col items-center text-center py-4 gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 dark:bg-emerald-400/10 ring-1 ring-emerald-500/20 dark:ring-emerald-400/15">
-                    <Sparkles className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-brand-navy dark:text-white mb-1">Already Contributed!</h3>
-                    <p className="text-sm text-brand-navy/65 dark:text-white/60 max-w-sm">
-                      {duplicateTerm
-                        ? `You've already submitted your ${duplicateTerm} grade distribution. Your contribution is counting — thanks for being part of the community.`
-                        : "You've already submitted a grade distribution for this term. Your contribution is counting — thanks for being part of the community."}
-                    </p>
+                /* ── DUPLICATE state — same term already processed ── */
+                <div className="flex flex-col items-center py-4 gap-4">
+                  <div className="flex items-start gap-3 w-full p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/20 dark:border-amber-400/15">
+                    <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div className="min-w-0 text-left">
+                      <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">
+                        Already uploaded
+                      </h3>
+                      <p className="text-xs text-amber-700/85 dark:text-amber-400/80 max-w-md">
+                        {duplicateTerm
+                          ? `You already submitted this term’s distribution (${duplicateTerm}). It’s already counted toward your contribution.`
+                          : "You already submitted a distribution for this term. It’s already counted toward your contribution."}
+                      </p>
+                    </div>
                   </div>
                   {duplicateTerm && (
-                    <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 dark:bg-emerald-400/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-400/15">
-                      {duplicateTerm} · Submitted ✓
+                    <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 dark:bg-amber-400/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 dark:border-amber-400/15">
+                      {duplicateTerm} · Already counted
                     </span>
                   )}
-                  <button onClick={handleReset} className="liquid-btn-red text-white rounded-full px-6 py-2.5 text-sm font-medium mt-1">
+                  <button type="button" onClick={handleReset} className="liquid-btn-red text-white rounded-full px-6 py-2.5 text-sm font-medium">
                     Upload Another File
                   </button>
                 </div>
