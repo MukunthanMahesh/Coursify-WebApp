@@ -1,99 +1,22 @@
-"use client"
-
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Github,
   Linkedin,
-  Mail,
   ChevronRight,
-  ChevronDown,
   BarChart3,
   MessageSquare,
   Brain,
   Sparkles,
 } from "lucide-react"
 import Link from "next/link"
-import { useToast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
 import type { LucideIcon } from "lucide-react"
+import { ScrollButton } from "./_components/ScrollButton"
+import { EmailCopyButton } from "./_components/EmailCopyButton"
 
 export default function About() {
-  const { toast } = useToast()
-
-  const copyToClipboard = (email: string, name: string) => {
-    navigator.clipboard.writeText(email).then(() => {
-      toast({
-        title: "Email copied!",
-        description: `${name}'s email has been copied to your clipboard.`,
-        duration: 3000,
-        variant: "success",
-      })
-    })
-  }
-
-  const scrollToFeatures = () => {
-    document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })
-  }
-
   return (
     <div className="relative min-h-screen overflow-x-clip pt-20">
-      <style jsx global>{`
-        .card-hover-effect {
-          transition: all 0.3s ease;
-        }
-
-        .gradient-text {
-          background: linear-gradient(-45deg, #00305f, #d62839, #efb215, #00305f);
-          background-size: 300% 300%;
-          animation: gradient-shift 6s ease infinite;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          color: transparent;
-        }
-
-        :is(.dark) .gradient-text {
-          background: linear-gradient(-45deg, #4a9eff, #ff4d5e, #ffc940, #4a9eff);
-          background-size: 300% 300%;
-          animation: gradient-shift 6s ease infinite;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .moving-gradient {
-          background: linear-gradient(-45deg, #00305f, #d62839, #efb215, #00305f);
-          background-size: 300% 300%;
-          animation: gradient-shift 6s ease infinite;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          color: transparent;
-          display: inline-block;
-        }
-
-        :is(.dark) .moving-gradient {
-          background: linear-gradient(-45deg, #4a9eff, #ff4d5e, #ffc940, #4a9eff);
-          background-size: 300% 300%;
-          animation: gradient-shift 6s ease infinite;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        @keyframes gradient-shift {
-          0%   { background-position: 0% 50%; }
-          50%  { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
-
-      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-        <div className="liquid-blob w-[500px] h-[440px] bg-brand-red top-0 right-0 opacity-[0.05]" style={{ animationDelay: '0s' }} />
-        <div className="liquid-blob-alt w-[420px] h-[480px] bg-brand-navy bottom-0 left-0 opacity-[0.05]" style={{ animationDelay: '-6s' }} />
-        <div className="liquid-blob w-[300px] h-[300px] bg-brand-gold top-1/3 left-1/2 opacity-[0.04]" style={{ animationDelay: '-12s' }} />
-      </div>
-
       <div className="container pt-12 pb-0 px-4 md:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="relative mb-16 max-w-3xl mx-auto text-center">
@@ -112,21 +35,13 @@ export default function About() {
             <Sparkles className="h-3.5 w-3.5 shrink-0 text-brand-gold" strokeWidth={2} aria-hidden />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="text-brand-navy dark:text-white">About</span> <span className="gradient-text">Coursify</span>
+            <span className="text-brand-navy dark:text-white">About</span>{" "}
+            <span className="text-brand-red">Coursify</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-6">
             Helping Queen&apos;s University students make informed academic decisions through data and AI.
           </p>
-          <button
-            type="button"
-            onClick={scrollToFeatures}
-            className="liquid-btn-red group inline-block w-full text-center text-white px-7 py-3 rounded-xl font-medium sm:w-auto"
-          >
-            <span className="relative z-10 flex items-center justify-center">
-              See Features
-              <ChevronDown className="ml-2 h-5 w-5 transform group-hover:translate-y-0.5 transition-transform duration-300" />
-            </span>
-          </button>
+          <ScrollButton />
         </div>
 
         {/* Mission & Stats */}
@@ -279,12 +194,7 @@ export default function About() {
                       >
                         <Linkedin className="h-4 w-4" />
                       </a>
-                      <button
-                        onClick={() => copyToClipboard("amaan.javed@queensu.ca", "Amaan")}
-                        className="text-gray-400 dark:text-gray-500 hover:text-brand-navy dark:hover:text-blue-400 transition-colors duration-300"
-                      >
-                        <Mail className="h-4 w-4" />
-                      </button>
+                      <EmailCopyButton email="amaan.javed@queensu.ca" name="Amaan" />
                     </div>
                   </div>
                 </CardContent>
@@ -316,12 +226,7 @@ export default function About() {
                       >
                         <Linkedin className="h-4 w-4" />
                       </a>
-                      <button
-                        onClick={() => copyToClipboard("23wv35@queensu.ca", "Aayush")}
-                        className="text-gray-400 dark:text-gray-500 hover:text-brand-navy dark:hover:text-blue-400 transition-colors duration-300"
-                      >
-                        <Mail className="h-4 w-4" />
-                      </button>
+                      <EmailCopyButton email="23wv35@queensu.ca" name="Aayush" />
                     </div>
                   </div>
                 </CardContent>
@@ -453,11 +358,11 @@ export default function About() {
               </Link>
               <p className="text-xs text-gray-600 dark:text-gray-400">
                 Platform for{" "}
-                <span className="moving-gradient font-medium">
+                <span className="font-medium text-brand-navy dark:text-white">
                   Queen&apos;s Students
                 </span>{" "}
                 by{" "}
-                <span className="moving-gradient font-medium">
+                <span className="font-medium text-brand-navy dark:text-white">
                   Queen&apos;s Students
                 </span>
               </p>
@@ -467,7 +372,7 @@ export default function About() {
             </div>
 
             <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2">
-              <span className="moving-gradient font-medium">
+              <span className="font-medium text-brand-navy dark:text-white">
                 © {new Date().getFullYear()} Coursify
               </span>
               <span className="text-gray-300 dark:text-gray-600">•</span>
