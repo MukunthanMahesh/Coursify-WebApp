@@ -3,6 +3,7 @@
 import type { RefObject } from "react"
 import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { Hammer, X } from "lucide-react"
+import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
   PROMPT_BUILDER_CATEGORIES,
@@ -17,7 +18,7 @@ export type PromptBuilderPanelProps = {
   onOpenChange: (open: boolean) => void
   onUsePrompt: (text: string) => void
   /** Focus target after "Use prompt" (overrides default return to trigger) */
-  questionInputRef?: RefObject<HTMLInputElement | null>
+  questionInputRef?: RefObject<HTMLTextAreaElement | null>
   /** When true, composer is inert (e.g. How it works modal) */
   composerInert?: boolean
   disabled?: boolean
@@ -33,24 +34,42 @@ export function PromptBuilderPanel({
 }: PromptBuilderPanelProps) {
   const titleId = useId()
   const descId = useId()
+  const optionDetailFieldId = useId()
   const closeRef = useRef<HTMLButtonElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const closedViaUsePromptRef = useRef(false)
 
   const [categoryId, setCategoryId] = useState(PROMPT_BUILDER_DEFAULT_CATEGORY_ID)
   const [optionId, setOptionId] = useState<string | null>(null)
+  const [refinementId, setRefinementId] = useState<string | null>(null)
+  const [optionDetailText, setOptionDetailText] = useState("")
 
   const category = useMemo(
     () => PROMPT_BUILDER_CATEGORIES.find((c) => c.id === categoryId),
     [categoryId]
   )
 
+  const selectedOption = useMemo(
+    () => category?.options.find((o) => o.id === optionId),
+    [category, optionId]
+  )
+
   useEffect(() => {
     setOptionId(null)
+    setRefinementId(null)
   }, [categoryId])
 
-  const previewText = composePromptPreview(categoryId, optionId)
-  const flatPrompt = composePrompt(categoryId, optionId)
+  useEffect(() => {
+    setOptionDetailText("")
+  }, [optionId])
+
+  const previewText = composePromptPreview(
+    categoryId,
+    optionId,
+    refinementId,
+    optionDetailText
+  )
+  const flatPrompt = composePrompt(categoryId, optionId, refinementId, optionDetailText)
   const canUse = Boolean(flatPrompt.trim())
 
   const handleUsePrompt = () => {
@@ -89,7 +108,7 @@ export function PromptBuilderPanel({
         side="top"
         align="start"
         sideOffset={10}
-        collisionPadding={16}
+        collisionPadding={12}
         onCloseAutoFocus={(e) => {
           e.preventDefault()
           if (closedViaUsePromptRef.current) {
@@ -103,11 +122,11 @@ export function PromptBuilderPanel({
           closeRef.current?.focus()
         }}
         className={cn(
-          "glass-modal-panel w-[min(calc(100vw-2rem),28rem)] max-h-[min(70vh,32rem)] overflow-hidden rounded-2xl border border-white/55 p-0 shadow-xl dark:border-white/12",
-          "flex flex-col gap-0 p-4 text-brand-navy dark:text-white"
+          "glass-modal-panel w-[min(calc(100vw-1rem),42rem)] max-w-[42rem] overflow-visible rounded-2xl border border-white/55 p-0 shadow-xl dark:border-white/12",
+          "flex flex-col gap-0 p-5 text-brand-navy dark:text-white"
         )}
       >
-        <div className="relative pr-10">
+        <div className="relative shrink-0 pr-10">
           <button
             ref={closeRef}
             type="button"
@@ -125,80 +144,146 @@ export function PromptBuilderPanel({
           </p>
         </div>
 
-        <div className="mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-navy/55 dark:text-white/55">
-            Category
-          </p>
-          <div
-            className="mt-1.5 flex gap-1.5 overflow-x-auto pb-1 -mx-0.5 px-0.5"
-            role="group"
-            aria-label="Question categories"
-          >
-            {PROMPT_BUILDER_CATEGORIES.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => setCategoryId(c.id)}
-                className={cn(
-                  "shrink-0 rounded-full border px-3 py-1.5 text-left text-xs font-medium transition-colors",
-                  categoryId === c.id
-                    ? "border-brand-red/45 bg-brand-red/12 text-brand-navy dark:border-brand-red/50 dark:bg-brand-red/18 dark:text-white"
-                    : "border-brand-navy/15 bg-white/70 text-brand-navy hover:border-brand-navy/30 dark:border-white/15 dark:bg-white/[0.06] dark:text-white/90 dark:hover:border-white/25"
-                )}
-              >
-                {c.title}
-              </button>
-            ))}
+        <div className="mt-4 shrink-0 space-y-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-navy/55 dark:text-white/55">
+              Category
+            </p>
+            <div
+              className="mt-2 flex flex-wrap gap-2"
+              role="group"
+              aria-label="Question categories"
+            >
+              {PROMPT_BUILDER_CATEGORIES.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    setCategoryId(c.id)
+                  }}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-left text-xs font-medium transition-colors",
+                    categoryId === c.id
+                      ? "border-brand-red/45 bg-brand-red/12 text-brand-navy dark:border-brand-red/50 dark:bg-brand-red/18 dark:text-white"
+                      : "border-brand-navy/15 bg-white/70 text-brand-navy hover:border-brand-navy/30 dark:border-white/15 dark:bg-white/[0.06] dark:text-white/90 dark:hover:border-white/25"
+                  )}
+                >
+                  {c.title}
+                </button>
+              ))}
+            </div>
           </div>
 
           {category && (
-            <div className="mt-4">
-              <p className="text-sm font-semibold text-brand-navy dark:text-white">
-                {category.followUpQuestion}
-              </p>
-              <div className="mt-2 flex flex-col gap-2" role="group" aria-label="Answer focus">
-                {category.options.map((o) => (
-                  <button
-                    key={o.id}
-                    type="button"
-                    onClick={() => setOptionId(o.id)}
-                    className={cn(
-                      "rounded-xl border px-3 py-2.5 text-left text-sm leading-snug transition-colors",
-                      optionId === o.id
-                        ? "border-brand-red/45 bg-brand-red/10 ring-2 ring-brand-red/20 dark:border-brand-red/45 dark:bg-brand-red/15 dark:ring-brand-red/25"
-                        : "border-brand-navy/12 bg-white/60 hover:border-brand-navy/22 dark:border-white/12 dark:bg-white/[0.05] dark:hover:border-white/22"
-                    )}
-                  >
-                    <span className="font-medium text-brand-navy dark:text-white">{o.label}</span>
-                    <span className="mt-1 block text-xs text-brand-navy/72 dark:text-white/72">
-                      {o.snippet}
-                    </span>
-                  </button>
-                ))}
+            <>
+              <div>
+                <p className="text-sm font-semibold text-brand-navy dark:text-white">
+                  {category.followUpQuestion}
+                </p>
+                <div
+                  className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2"
+                  role="group"
+                  aria-label="Answer focus"
+                >
+                  {category.options.map((o) => (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => {
+                        setOptionId(o.id)
+                      }}
+                      className={cn(
+                        "rounded-xl border px-3 py-2 text-left text-sm leading-snug transition-colors",
+                        optionId === o.id
+                          ? "border-brand-red/45 bg-brand-red/10 ring-2 ring-brand-red/20 dark:border-brand-red/45 dark:bg-brand-red/15 dark:ring-brand-red/25"
+                          : "border-brand-navy/12 bg-white/60 hover:border-brand-navy/22 dark:border-white/12 dark:bg-white/[0.05] dark:hover:border-white/22"
+                      )}
+                    >
+                      <span className="font-medium text-brand-navy dark:text-white">{o.label}</span>
+                      <span className="mt-1 block text-xs leading-snug text-brand-navy/72 dark:text-white/72">
+                        {o.snippet}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {selectedOption?.detailField && (
+                  <div className="mt-3 max-w-full">
+                    <label
+                      htmlFor={optionDetailFieldId}
+                      className="text-xs font-semibold text-brand-navy dark:text-white"
+                    >
+                      {selectedOption.detailField.label}
+                    </label>
+                    <Input
+                      id={optionDetailFieldId}
+                      type="text"
+                      value={optionDetailText}
+                      onChange={(e) => setOptionDetailText(e.target.value)}
+                      placeholder={selectedOption.detailField.placeholder}
+                      maxLength={400}
+                      autoComplete="off"
+                      className="mt-1.5 h-10 border-brand-navy/20 bg-white/90 text-brand-navy placeholder:text-brand-navy/45 dark:border-white/20 dark:bg-white/[0.08] dark:text-white dark:placeholder:text-white/40"
+                    />
+                  </div>
+                )}
               </div>
-            </div>
+
+              <div
+                key={category.id}
+                className="border-t border-brand-navy/10 pt-4 dark:border-white/10"
+              >
+                <p className="text-sm font-semibold text-brand-navy dark:text-white">
+                  {category.refinementQuestion}
+                </p>
+                <p className="mt-0.5 text-xs text-brand-navy/65 dark:text-white/65">
+                  Optional — narrows how the answer should be framed.
+                </p>
+                <div
+                  className="mt-2 flex flex-wrap gap-2"
+                  role="group"
+                  aria-label="Refinement options"
+                >
+                  {category.refinementOptions.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => setRefinementId((prev) => (prev === r.id ? null : r.id))}
+                      className={cn(
+                        "rounded-full border px-3 py-1.5 text-left text-xs font-medium transition-colors",
+                        refinementId === r.id
+                          ? "border-brand-red/45 bg-brand-red/12 text-brand-navy dark:border-brand-red/50 dark:bg-brand-red/18 dark:text-white"
+                          : "border-brand-navy/15 bg-white/70 text-brand-navy hover:border-brand-navy/30 dark:border-white/15 dark:bg-white/[0.06] dark:text-white/90 dark:hover:border-white/25"
+                      )}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
 
-          <div className="mt-4">
+          <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-navy/55 dark:text-white/55">
               Preview
             </p>
             <div
-              className="mt-1.5 max-h-[7.5rem] overflow-y-auto rounded-xl border border-brand-navy/12 bg-white/50 px-3 py-2 text-xs leading-relaxed text-brand-navy/85 dark:border-white/12 dark:bg-black/20 dark:text-white/80"
+              className="mt-2 rounded-xl border border-brand-navy/12 bg-white/50 px-3 py-2.5 text-xs leading-relaxed text-brand-navy/85 dark:border-white/12 dark:bg-black/20 dark:text-white/80"
               aria-live="polite"
             >
               {previewText ? (
-                <pre className="whitespace-pre-wrap font-sans">{previewText}</pre>
+                <pre className="whitespace-pre-wrap break-words font-sans">{previewText}</pre>
               ) : (
                 <span className="text-brand-navy/50 dark:text-white/45">
-                  Pick a category and an option to see your prompt.
+                  Pick a focus above to see your prompt. Refinements update the preview when selected.
                 </span>
               )}
             </div>
           </div>
         </div>
 
-        <div className="mt-3 shrink-0 border-t border-brand-navy/10 pt-3 dark:border-white/10">
+        <div className="mt-4 shrink-0 border-t border-brand-navy/10 pt-4 dark:border-white/10">
           <button
             type="button"
             onClick={handleUsePrompt}

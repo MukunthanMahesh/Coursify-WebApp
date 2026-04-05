@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useState, useEffect, useRef, useMemo } from "react"
+import { Suspense, useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { motion, useAnimation, AnimatePresence } from "framer-motion"
 import { usePathname, useSearchParams } from "next/navigation"
@@ -30,7 +30,7 @@ function AIFeatures() {
   const [promptBuilderOpen, setPromptBuilderOpen] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const questionInputRef = useRef<HTMLInputElement>(null)
+  const questionTextareaRef = useRef<HTMLTextAreaElement>(null)
   const controls = useAnimation()
   const motionTier = useMotionTier()
   const marqueeLite = motionTier === "lite"
@@ -53,6 +53,28 @@ function AIFeatures() {
   )
 
   const needsAuthToAsk = !authLoading && !user
+
+  const adjustQuestionTextareaHeight = useCallback(() => {
+    const el = questionTextareaRef.current
+    if (!el) return
+    el.style.height = "auto"
+    const maxPx =
+      typeof window !== "undefined"
+        ? Math.min(360, Math.round(window.innerHeight * 0.42))
+        : 360
+    const next = Math.min(Math.max(el.scrollHeight, 44), maxPx)
+    el.style.height = `${next}px`
+  }, [])
+
+  useLayoutEffect(() => {
+    adjustQuestionTextareaHeight()
+  }, [question, adjustQuestionTextareaHeight])
+
+  useEffect(() => {
+    const onResize = () => adjustQuestionTextareaHeight()
+    window.addEventListener("resize", onResize)
+    return () => window.removeEventListener("resize", onResize)
+  }, [adjustQuestionTextareaHeight])
 
   useEffect(() => {
     if (showHowItWorks) setPromptBuilderOpen(false)
@@ -239,29 +261,29 @@ function AIFeatures() {
               if (next) setShowHowItWorks(false)
             }}
             onUsePrompt={(text) => setQuestion(text)}
-            questionInputRef={questionInputRef}
+            questionInputRef={questionTextareaRef}
             composerInert={showHowItWorks}
             disabled={authLoading}
           />
           <div
-            className={`group/composer flex min-w-0 flex-1 items-center gap-1 box-border rounded-[2rem] pl-5 pr-1.5 py-1.5
-            [transition-property:background-color,border-color,box-shadow,opacity,ring-color] duration-[420ms] ease-in-out
+            className={`group/composer flex min-w-0 flex-1 items-end gap-1 box-border rounded-[2rem] pl-5 pr-1.5 py-1.5
+            [transition-property:background-color,border-color,box-shadow,opacity] duration-[420ms] ease-in-out
             motion-reduce:transition-none
             bg-[#fcfcfd] dark:bg-[#262626]
             border border-brand-navy/20 dark:border-white/10
             shadow-[0_2px_12px_rgba(0,48,95,0.07),0_1px_4px_rgba(0,48,95,0.045),inset_0_1px_0_rgba(255,255,255,0.92)]
             dark:shadow-[0_2px_14px_rgba(0,0,0,0.28),0_1px_4px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.06)]
-            focus-within:border-brand-red/35 focus-within:ring-2 focus-within:ring-brand-red/20 dark:focus-within:ring-brand-red/25
+            focus-within:border-brand-red/35
             ${
               showHowItWorks
                 ? ""
                 : "hover:border-brand-navy/28 dark:hover:border-white/[0.14] hover:shadow-[0_5px_20px_rgba(0,48,95,0.09),0_2px_6px_rgba(0,48,95,0.055),inset_0_1px_0_rgba(255,255,255,0.98)] dark:hover:shadow-[0_6px_22px_rgba(0,0,0,0.36),0_2px_8px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]"
             }`}
           >
-            <input
-              ref={questionInputRef}
-              type="text"
-              className="min-h-[44px] min-w-0 flex-1 bg-transparent outline-none py-2 pl-0 pr-2 text-base sm:text-[17px] leading-snug text-[#222] dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
+            <textarea
+              ref={questionTextareaRef}
+              rows={1}
+              className="min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent py-2.5 pl-0 pr-2 text-base sm:text-[17px] leading-normal text-[#222] shadow-none outline-none ring-0 ring-offset-0 focus:border-0 focus:shadow-none focus:outline-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:outline-none focus-visible:ring-0 dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
               placeholder="Ask anything about courses or professors…"
               value={question}
               readOnly={showHowItWorks || needsAuthToAsk}
@@ -274,12 +296,13 @@ function AIFeatures() {
                 }
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
                   e.preventDefault()
                   if (question.trim()) handleSubmitQuestion()
                 }
               }}
               disabled={showHowItWorks || authLoading}
+              title="Enter for a new paragraph. Ctrl+Enter or Cmd+Enter to send."
               aria-label="Your question for Queen's Answers"
             />
             <button
