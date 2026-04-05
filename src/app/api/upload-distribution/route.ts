@@ -199,6 +199,7 @@ export async function POST(request: NextRequest) {
     const invalidations: Promise<unknown>[] = [
       redis.del(`access_status:${user.id}`),
       redis.del(`uploads:${user.id}`),
+      redis.delPattern("courses:*"),
     ];
     for (const code of courseCodes) {
       invalidations.push(redis.del(`course:${code}`));

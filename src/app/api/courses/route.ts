@@ -6,7 +6,7 @@ import { redis } from "@/lib/redis"
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
-const CACHE_TTL = 600 // 10 minutes
+const CACHE_TTL = 14400 // 4 hours
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
