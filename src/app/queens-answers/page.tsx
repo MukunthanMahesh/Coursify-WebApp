@@ -10,6 +10,7 @@ import { useMotionTier } from "@/lib/motion-prefs"
 import { useAuth } from "@/lib/auth/auth-context"
 import { buildAuthHref } from "@/lib/auth/safe-redirect"
 import { AuthModal } from "@/components/auth-modal"
+import { PromptBuilderPanel } from "@/components/queens-answers/prompt-builder-panel"
 import ContributionGate from "@/components/contribution-gate"
 
 function QueensAnswersSuspenseFallback() {
@@ -26,8 +27,10 @@ function QueensAnswersSuspenseFallback() {
 function AIFeatures() {
   const [question, setQuestion] = useState("")
   const [showHowItWorks, setShowHowItWorks] = useState(false)
+  const [promptBuilderOpen, setPromptBuilderOpen] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const questionInputRef = useRef<HTMLInputElement>(null)
   const controls = useAnimation()
   const motionTier = useMotionTier()
   const marqueeLite = motionTier === "lite"
@@ -50,6 +53,10 @@ function AIFeatures() {
   )
 
   const needsAuthToAsk = !authLoading && !user
+
+  useEffect(() => {
+    if (showHowItWorks) setPromptBuilderOpen(false)
+  }, [showHowItWorks])
 
   useEffect(() => {
     const stored = sessionStorage.getItem(QUEENS_ANSWERS_DRAFT_STORAGE_KEY)
@@ -209,7 +216,10 @@ function AIFeatures() {
           {/* How it works link */}
           <button
             type="button"
-            onClick={() => setShowHowItWorks(true)}
+            onClick={() => {
+              setPromptBuilderOpen(false)
+              setShowHowItWorks(true)
+            }}
             className="text-brand-navy dark:text-white underline text-base hover:text-brand-red transition cursor-pointer"
             style={{ background: "none", border: "none", padding: 0 }}
           >
@@ -217,9 +227,24 @@ function AIFeatures() {
           </button>
         </div>
 
-        {/* Ask a Question Input at the bottom */}
+        {/* Ask a Question Input at the bottom — prompt builder + composer pill */}
         <div
-          className={`group/composer fixed bottom-8 left-1/2 -translate-x-1/2 w-[min(100%-2rem,36rem)] max-w-xl flex items-center gap-1 box-border rounded-[2rem] pl-5 pr-1.5 py-1.5
+          className={`fixed bottom-8 left-1/2 -translate-x-1/2 flex w-[min(100%-2rem,38rem)] max-w-xl items-center gap-2 ${showHowItWorks ? "opacity-30 pointer-events-none blur-[1px]" : "opacity-100"}`}
+          style={{ zIndex: 30 }}
+        >
+          <PromptBuilderPanel
+            open={promptBuilderOpen}
+            onOpenChange={(next) => {
+              setPromptBuilderOpen(next)
+              if (next) setShowHowItWorks(false)
+            }}
+            onUsePrompt={(text) => setQuestion(text)}
+            questionInputRef={questionInputRef}
+            composerInert={showHowItWorks}
+            disabled={authLoading}
+          />
+          <div
+            className={`group/composer flex min-w-0 flex-1 items-center gap-1 box-border rounded-[2rem] pl-5 pr-1.5 py-1.5
             [transition-property:background-color,border-color,box-shadow,opacity,ring-color] duration-[420ms] ease-in-out
             motion-reduce:transition-none
             bg-[#fcfcfd] dark:bg-[#262626]
@@ -229,53 +254,50 @@ function AIFeatures() {
             focus-within:border-brand-red/35 focus-within:ring-2 focus-within:ring-brand-red/20 dark:focus-within:ring-brand-red/25
             ${
               showHowItWorks
-                ? "opacity-30 pointer-events-none blur-[1px]"
-                : "opacity-100 hover:border-brand-navy/28 dark:hover:border-white/[0.14] hover:shadow-[0_5px_20px_rgba(0,48,95,0.09),0_2px_6px_rgba(0,48,95,0.055),inset_0_1px_0_rgba(255,255,255,0.98)] dark:hover:shadow-[0_6px_22px_rgba(0,0,0,0.36),0_2px_8px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                ? ""
+                : "hover:border-brand-navy/28 dark:hover:border-white/[0.14] hover:shadow-[0_5px_20px_rgba(0,48,95,0.09),0_2px_6px_rgba(0,48,95,0.055),inset_0_1px_0_rgba(255,255,255,0.98)] dark:hover:shadow-[0_6px_22px_rgba(0,0,0,0.36),0_2px_8px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]"
             }`}
-          style={{ zIndex: 30 }}
-        >
-          <input
-            type="text"
-            className="min-h-[44px] min-w-0 flex-1 bg-transparent outline-none py-2 pl-0 pr-2 text-base sm:text-[17px] leading-snug text-[#222] dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
-            placeholder="Ask anything about courses or professors…"
-            value={question}
-            readOnly={showHowItWorks || needsAuthToAsk}
-            onChange={(e) => setQuestion(e.target.value)}
-            onClick={openAuthModalForQuestion}
-            onFocus={(e) => {
-              if (needsAuthToAsk) {
-                e.target.blur()
-                setAuthModalOpen(true)
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                if (question.trim()) handleSubmitQuestion();
-              }
-            }}
-            disabled={showHowItWorks || authLoading}
-            aria-label="Your question for Queen's Answers"
-          />
-          <button
-            type="button"
-            onClick={() => handleSubmitQuestion()}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-md shadow-brand-red/25 transition-[transform,background-color,box-shadow,opacity] duration-200 ease-out hover:bg-[#c01f2e] hover:shadow-lg hover:shadow-brand-red/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red disabled:pointer-events-none disabled:opacity-35 motion-reduce:hover:scale-100 active:scale-[0.97] enabled:hover:scale-[1.04]"
-            aria-label="Send question"
-            disabled={
-              showHowItWorks ||
-              authLoading ||
-              !question.trim()
-            }
           >
-            <ArrowUp
-              className="h-5 w-5"
-              strokeWidth={2.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
+            <input
+              ref={questionInputRef}
+              type="text"
+              className="min-h-[44px] min-w-0 flex-1 bg-transparent outline-none py-2 pl-0 pr-2 text-base sm:text-[17px] leading-snug text-[#222] dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
+              placeholder="Ask anything about courses or professors…"
+              value={question}
+              readOnly={showHowItWorks || needsAuthToAsk}
+              onChange={(e) => setQuestion(e.target.value)}
+              onClick={openAuthModalForQuestion}
+              onFocus={(e) => {
+                if (needsAuthToAsk) {
+                  e.target.blur()
+                  setAuthModalOpen(true)
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  if (question.trim()) handleSubmitQuestion()
+                }
+              }}
+              disabled={showHowItWorks || authLoading}
+              aria-label="Your question for Queen's Answers"
             />
-          </button>
+            <button
+              type="button"
+              onClick={() => handleSubmitQuestion()}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-md shadow-brand-red/25 transition-[transform,background-color,box-shadow,opacity] duration-200 ease-out hover:bg-[#c01f2e] hover:shadow-lg hover:shadow-brand-red/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red disabled:pointer-events-none disabled:opacity-35 motion-reduce:hover:scale-100 active:scale-[0.97] enabled:hover:scale-[1.04]"
+              aria-label="Send question"
+              disabled={showHowItWorks || authLoading || !question.trim()}
+            >
+              <ArrowUp
+                className="h-5 w-5"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              />
+            </button>
+          </div>
         </div>
       </div>
 
