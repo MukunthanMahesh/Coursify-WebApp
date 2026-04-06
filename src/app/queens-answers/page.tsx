@@ -214,7 +214,7 @@ function AIFeatures() {
   return (
       <ContributionGate>
     <div className="h-screen overflow-hidden bg-[var(--page-bg)] pt-20">
-      <div className="h-full flex flex-col items-center justify-center px-4 overflow-hidden">
+      <div className="h-full flex flex-col items-center justify-center px-4 overflow-hidden -mt-16">
         <AnimatePresence>
           {messages.length === 0 && (
             <motion.div
@@ -222,15 +222,15 @@ function AIFeatures() {
               initial={{ opacity: 1, y: 0 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-              className="w-full max-w-2xl flex flex-col items-center"
+              className="w-full max-w-3xl flex flex-col items-center"
             >
               {/* Header */}
-              <h1 className="text-5xl font-extrabold text-center mb-8 tracking-tight animated-title">
+              <h1 className="text-5xl font-extrabold text-center mb-6 tracking-tight animated-title">
                 <span className="gradient-text">Queen's Answers</span>
               </h1>
 
               {/* Continuous Carousel */}
-              <div className="w-full mb-8 overflow-hidden relative carousel-container" ref={containerRef}>
+              <div className="w-full mb-6 overflow-hidden relative carousel-container" ref={containerRef}>
                 <motion.div className="flex gap-4 px-4" animate={controls} style={{ width: "max-content" }}>
                   {duplicatedQuestions.map((q, i) => (
                     <motion.button
@@ -289,7 +289,7 @@ function AIFeatures() {
         </AnimatePresence>
 
         {messages.length > 0 && (
-          <div className="flex-1 w-full max-w-2xl mx-auto overflow-y-auto pb-32 pt-6 px-4 space-y-4">
+          <div className="flex-1 w-full max-w-3xl mx-auto overflow-y-auto pb-32 pt-6 px-4 space-y-4">
             {messages.map((m, i) =>
               m.role === "user" ? (
                 <div key={i} className="flex justify-end">
@@ -328,7 +328,7 @@ function AIFeatures() {
 
         {/* Ask a Question Input at the bottom — prompt builder + composer pill */}
         <div
-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 flex w-[min(100%-2rem,38rem)] max-w-xl items-center gap-2 ${showHowItWorks ? "opacity-30 pointer-events-none blur-[1px]" : "opacity-100"}`}
+          className={`fixed bottom-8 left-1/2 -translate-x-1/2 flex w-[min(100%-2rem,46rem)] max-w-3xl items-center gap-2 ${showHowItWorks ? "opacity-30 pointer-events-none blur-[1px]" : "opacity-100"}`}
           style={{ zIndex: 30 }}
         >
           <PromptBuilderPanel
