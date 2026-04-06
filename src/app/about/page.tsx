@@ -65,11 +65,11 @@ export default function About() {
             <div className="shrink-0">
               <Link
                 href="/schools/queens"
-                className="bg-brand-navy dark:bg-blue-600 inline-block w-full text-center text-white px-7 py-3 rounded-xl font-medium sm:w-auto mt-auto"
+                className="liquid-btn-blue group inline-block w-full text-center text-white px-7 py-3 rounded-xl font-medium sm:w-auto mt-auto"
               >
                 <span className="relative z-10 flex items-center justify-center">
                   Explore Courses
-                  <ChevronRight className="ml-2 h-5 w-5" />
+                  <ChevronRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </Link>
             </div>
