@@ -3,6 +3,8 @@
 import type React from "react"
 import { useState, useRef } from "react"
 import { Info, UploadCloud, AlertTriangle, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
+import Image from "next/image"
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { AuthModal } from "@/components/auth-modal"
 import { useAuth } from "@/lib/auth/auth-context"
 import { getSupabaseClient } from "@/lib/supabase/client"
@@ -126,15 +128,42 @@ export default function AddCoursesPage() {
 
           {/* How to find SOLUS link */}
           <div className="flex justify-center mb-6">
-            <a
-              href="https://www.queensu.ca/registrar/academic-info/grades/release-dates-and-viewing"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="liquid-btn-red text-white px-6 py-2.5 rounded-full inline-flex items-center gap-2 font-medium text-sm"
-            >
-              <Info className="h-4 w-4" />
-              How To Find SOLUS Distribution
-            </a>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="liquid-btn-red text-white px-6 py-2.5 rounded-full inline-flex items-center gap-2 font-medium text-sm">
+                  <Info className="h-4 w-4" />
+                  How To Find SOLUS Distribution
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-xl">What is a SOLUS Distribution?</DialogTitle>
+                  <DialogDescription className="text-sm leading-relaxed">
+                    A SOLUS grade distribution is a report from Queen&apos;s University showing how grades were distributed across letter grades for each course you took in a given term. It looks like this:
+                  </DialogDescription>
+                </DialogHeader>
+
+                <Image
+                  src="/course-distribution-example.png"
+                  alt="Example of a SOLUS grade distribution report"
+                  width={600}
+                  height={300}
+                  className="rounded-xl border border-brand-navy/10 dark:border-white/10 w-full"
+                />
+
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-brand-navy dark:text-white">How to Download</h3>
+                  <ol className="list-decimal list-inside space-y-2 text-sm text-brand-navy/80 dark:text-white/70">
+                    <li>Log into <strong>SOLUS Student Centre</strong></li>
+                    <li>Select the <strong>Academic Records</strong> tile</li>
+                    <li>Select the <strong>View Grades</strong> navigation</li>
+                    <li>Select the appropriate <strong>Term/Career</strong> combination</li>
+                    <li>Select the <strong>Grade Distribution</strong> button to view a grade distribution report</li>
+                    <li>Download the PDF and then upload it on our website</li>
+                  </ol>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Main upload card */}
