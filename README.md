@@ -53,10 +53,12 @@ Copy [.env.example](./.env.example) to `.env.local` and fill in:
 | Variable | Required | Where to get it |
 | -------- | -------- | ---------------- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase → **Project Settings → API** |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Same |
-| `SUPABASE_SERVICE_KEY` | Yes for uploads & `/api/me/*` | Same (**service_role** — server only, never in client bundle) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | **Project Settings → API → Legacy keys** tab → `anon` `public` |
+| `SUPABASE_SERVICE_KEY` | Yes for uploads & `/api/me/*` | **Project Settings → API → Legacy keys** tab → `service_role` (server only, never in client bundle) |
 | `UPSTASH_REDIS_REST_URL` | No | [Upstash](https://console.upstash.com/) Redis → REST API |
 | `UPSTASH_REDIS_REST_TOKEN` | No | Same |
+
+> **⚠️ Use the Legacy API keys, not the newer "Publishable / Secret" keys.** The publishable keys don't work with the Supabase database API. See [`.env.example`](./.env.example) for the exact mapping.
 
 If you omit Upstash, the app still runs; API routes will skip caching and hit Supabase more often.
 
@@ -73,11 +75,15 @@ Use your **own** Supabase project (free tier is fine). Schema and sample data li
    npx supabase db push
    ```
 
-3. **Seed** sample courses and comments. **Local:** `npx supabase db reset` applies migrations and [`supabase/seed.sql`](./supabase/seed.sql) (requires Docker). **Remote:** after `db push`, open the Supabase **SQL Editor**, paste the contents of `supabase/seed.sql`, and run it once.
+3. **Seed** sample courses and comments:
+
+   - **Local (Docker):** `npm run db:reseed` — drops everything, re-applies migrations, and runs [`supabase/seed.sql`](./supabase/seed.sql).
+   - **Remote:** `npm run db:seed-remote` — same as above but targets your linked Supabase project.
+   - **Manual fallback:** after `db push`, open the Supabase **SQL Editor**, paste the contents of `supabase/seed.sql`, and run it once.
 
 4. **Auth URLs:** In **Authentication → URL configuration**, set **Site URL** to `http://localhost:3000` and add redirect URL `http://localhost:3000/auth/callback`.
 
-If the database schema changes in production, maintainers should add new SQL under `supabase/migrations/` and commit them (e.g. via `supabase db pull` from the canonical project or hand-written migrations). Contributors run `npx supabase db push` after `git pull` to stay up to date.
+**Staying up to date:** The schema is stable and changes infrequently. If it does change, maintainers will add new SQL under `supabase/migrations/` and update `supabase/seed.sql`. Contributors just `git pull` then `npm run db:reseed` (local) or `npm run db:seed-remote` (remote) to get the latest schema and data.
 
 ### 4. Run the dev server
 
@@ -87,7 +93,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Production build: `npm run build` then `npm start`. Lint: `npm run lint`.
 
-**Optional npm scripts (Supabase):** `npm run db:start`, `npm run db:reset`, `npm run db:push` (wrap `npx supabase …`).
+**npm scripts (Supabase):** `npm run db:start`, `npm run db:reset`, `npm run db:reseed`, `npm run db:seed-remote`, `npm run db:push` (wrap `npx supabase …`).
 
 ---
 
