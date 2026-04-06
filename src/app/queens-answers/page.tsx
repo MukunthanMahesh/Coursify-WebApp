@@ -5,7 +5,7 @@ import { createPortal } from "react-dom"
 import { motion, useAnimation, AnimatePresence } from "framer-motion"
 import { usePathname, useSearchParams } from "next/navigation"
 import { QUEENS_ANSWERS_DRAFT_STORAGE_KEY } from "@/constants/queens-answers"
-import { ArrowUp, Bot, Brain, Search, MessageSquare, Target } from "lucide-react"
+import { ArrowUp, Brain, Hammer, Search, MessageSquare, Target } from "lucide-react"
 import { useMotionTier } from "@/lib/motion-prefs"
 import { useAuth } from "@/lib/auth/auth-context"
 import { buildAuthHref } from "@/lib/auth/safe-redirect"
@@ -108,23 +108,23 @@ function AIFeatures() {
   const howItWorksItems = [
     {
       icon: Search,
-      title: "Ask about courses or professors",
-      description: "Courses, workload, grading, teaching style—ask anything.",
+      title: "Type or tap a question",
+      description: "Ask anything, or tap a suggestion from the carousel to get started.",
     },
     {
-      icon: Bot,
-      title: "Get AI-assisted answers",
-      description: "Course data plus AI, returned as clear guidance.",
+      icon: Hammer,
+      title: "Use the prompt builder",
+      description: "Pick a category, option, and refinement to craft a detailed question automatically.",
     },
     {
-      icon: MessageSquare,
-      title: "Relevant student sentiment",
-      description: "Informed by discussions, reviews, and course context.",
+      icon: Brain,
+      title: "AI generates your answer",
+      description: "Your question is matched against course data, reviews, and grades to produce a tailored response.",
     },
     {
       icon: Target,
       title: "Make confident choices",
-      description: "Compare options and pick what fits your goals.",
+      description: "Compare courses, professors, and workloads so you can pick what fits your goals.",
     },
   ]
 
@@ -213,8 +213,8 @@ function AIFeatures() {
 
   return (
       <ContributionGate>
-    <div className="h-screen overflow-hidden bg-[var(--page-bg)] pt-20">
-      <div className="h-full flex flex-col items-center justify-center px-4 overflow-hidden -mt-16">
+    <div className="h-screen overflow-hidden bg-[var(--page-bg)] pt-16 sm:pt-20">
+      <div className={`h-full flex flex-col items-center px-2 sm:px-4 overflow-hidden ${messages.length === 0 ? "justify-center -mt-10 sm:-mt-16" : ""}`}>
         <AnimatePresence>
           {messages.length === 0 && (
             <motion.div
@@ -225,13 +225,13 @@ function AIFeatures() {
               className="w-full max-w-3xl flex flex-col items-center"
             >
               {/* Header */}
-              <h1 className="text-5xl font-extrabold text-center mb-6 tracking-tight animated-title">
+              <h1 className="text-3xl sm:text-5xl font-extrabold text-center mb-4 sm:mb-6 tracking-tight animated-title">
                 <span className="gradient-text">Queen's Answers</span>
               </h1>
 
               {/* Continuous Carousel */}
-              <div className="w-full mb-6 overflow-hidden relative carousel-container" ref={containerRef}>
-                <motion.div className="flex gap-4 px-4" animate={controls} style={{ width: "max-content" }}>
+              <div className="w-full mb-4 sm:mb-6 overflow-hidden relative carousel-container" ref={containerRef}>
+                <motion.div className="flex gap-2.5 sm:gap-4 px-3 sm:px-4" animate={controls} style={{ width: "max-content" }}>
                   {duplicatedQuestions.map((q, i) => (
                     <motion.button
                       key={i}
@@ -240,7 +240,7 @@ function AIFeatures() {
                       onClick={() => {
                         handleSampleQuestionClick(q.text);
                       }}
-                      className={`relative mx-0.5 flex items-center rounded-full px-6 py-3 text-base font-medium whitespace-nowrap box-border
+                      className={`relative mx-0.5 flex items-center rounded-full px-4 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-medium whitespace-nowrap box-border
                         border border-brand-navy/28 dark:border-white/[0.12]
                         ${marqueeLite ? "bg-white/95 dark:bg-zinc-800/95" : "bg-white/82 dark:bg-zinc-800/82 backdrop-blur-md"}
                         text-brand-navy dark:text-white
@@ -279,7 +279,7 @@ function AIFeatures() {
                   setPromptBuilderOpen(false)
                   setShowHowItWorks(true)
                 }}
-                className="text-brand-navy dark:text-white underline text-base hover:text-brand-red transition cursor-pointer"
+                className="text-brand-navy dark:text-white underline text-sm sm:text-base hover:text-brand-red transition cursor-pointer"
                 style={{ background: "none", border: "none", padding: 0 }}
               >
                 Learn how Queen's Answers works &gt;
@@ -289,20 +289,20 @@ function AIFeatures() {
         </AnimatePresence>
 
         {messages.length > 0 && (
-          <div className="flex-1 w-full max-w-3xl mx-auto overflow-y-auto pb-32 pt-6 px-4 space-y-4">
+          <div className="flex-1 w-full max-w-3xl mx-auto overflow-y-auto pb-28 sm:pb-32 pt-4 px-3 sm:px-4 space-y-3 sm:space-y-4">
             {messages.map((m, i) =>
               m.role === "user" ? (
                 <div key={i} className="flex justify-end">
-                  <div className="rounded-2xl px-4 py-2.5 max-w-[80%] text-[15px] bg-[#efb215] text-brand-navy dark:bg-[#efb215] dark:text-brand-navy font-medium">
+                  <div className="rounded-2xl px-3.5 py-2 sm:px-4 sm:py-2.5 max-w-[88%] sm:max-w-[80%] text-[14px] sm:text-[15px] bg-[#efb215] text-brand-navy dark:bg-[#efb215] dark:text-brand-navy font-medium">
                     {m.text}
                   </div>
                 </div>
               ) : (
                 <div key={i} className="flex justify-start gap-2 items-start">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-red mt-0.5">
-                    <Brain className="h-4 w-4 text-white" strokeWidth={1.85} />
+                  <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full bg-brand-red mt-0.5">
+                    <Brain className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" strokeWidth={1.85} />
                   </div>
-                  <div className="rounded-2xl px-4 py-2.5 max-w-[80%] text-[15px] bg-brand-navy text-white dark:bg-brand-navy dark:text-white">
+                  <div className="rounded-2xl px-3.5 py-2 sm:px-4 sm:py-2.5 max-w-[88%] sm:max-w-[80%] text-[14px] sm:text-[15px] bg-brand-navy text-white dark:bg-brand-navy dark:text-white">
                     {m.text}
                   </div>
                 </div>
@@ -328,7 +328,7 @@ function AIFeatures() {
 
         {/* Ask a Question Input at the bottom — prompt builder + composer pill */}
         <div
-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 flex w-[min(100%-2rem,46rem)] max-w-3xl items-center gap-2 ${showHowItWorks ? "opacity-30 pointer-events-none blur-[1px]" : "opacity-100"}`}
+          className={`fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 flex w-[min(100%-1rem,46rem)] sm:w-[min(100%-2rem,46rem)] max-w-3xl items-center gap-1.5 sm:gap-2 ${showHowItWorks ? "opacity-30 pointer-events-none blur-[1px]" : "opacity-100"}`}
           style={{ zIndex: 30 }}
         >
           <PromptBuilderPanel
@@ -433,10 +433,10 @@ function AIFeatures() {
                   </button>
                   <div className="glass-modal-accent mx-auto mb-3 h-1.5 w-24 rounded-full opacity-90" />
                   <h2 className="mb-2 text-center text-2xl font-bold text-brand-navy dark:text-white sm:text-3xl">
-                    How <span className="gradient-text">Queen&apos;s Answers</span> Works
+                    How Queen&apos;s Answers Works
                   </h2>
                   <p className="mx-auto max-w-xl text-center text-sm leading-snug text-brand-navy/68 dark:text-white/68">
-                    Course data and AI, distilled into answers you can use—four quick ideas below.
+                    Ask a question, let AI do the research, and get actionable course guidance in seconds.
                   </p>
                   <ul className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
                     {howItWorksItems.map((item) => {
