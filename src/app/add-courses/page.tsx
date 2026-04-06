@@ -2,7 +2,9 @@
 
 import type React from "react"
 import { useState, useRef } from "react"
-import { Info, UploadCloud, AlertTriangle, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, Sparkles } from "lucide-react"
+import { Info, UploadCloud, AlertTriangle, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
+import Image from "next/image"
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { AuthModal } from "@/components/auth-modal"
 import { useAuth } from "@/lib/auth/auth-context"
 import { getSupabaseClient } from "@/lib/supabase/client"
@@ -60,7 +62,7 @@ export default function AddCoursesPage() {
 
       if (!response.ok) {
         const errorMsg = result.errors?.[0] || "Upload failed."
-        // Detect duplicate term submission — show positive UI instead of error
+        // Duplicate term submission — dedicated amber state instead of generic error
         if (errorMsg.toLowerCase().includes("already submitted")) {
           const termMatch = errorMsg.match(/for (.+?)\./i)
           setDuplicateTerm(termMatch ? termMatch[1] : null)
@@ -126,15 +128,42 @@ export default function AddCoursesPage() {
 
           {/* How to find SOLUS link */}
           <div className="flex justify-center mb-6">
-            <a
-              href="https://www.queensu.ca/registrar/academic-info/grades/release-dates-and-viewing"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="liquid-btn-red text-white px-6 py-2.5 rounded-full inline-flex items-center gap-2 font-medium text-sm"
-            >
-              <Info className="h-4 w-4" />
-              How To Find SOLUS Distribution
-            </a>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="liquid-btn-red text-white px-6 py-2.5 rounded-full inline-flex items-center gap-2 font-medium text-sm">
+                  <Info className="h-4 w-4" />
+                  How To Find SOLUS Distribution
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-xl">What is a SOLUS Distribution?</DialogTitle>
+                  <DialogDescription className="text-sm leading-relaxed">
+                    A SOLUS grade distribution is a report from Queen&apos;s University showing how grades were distributed across letter grades for each course you took in a given term. It looks like this:
+                  </DialogDescription>
+                </DialogHeader>
+
+                <Image
+                  src="/course-distribution-example.png"
+                  alt="Example of a SOLUS grade distribution report"
+                  width={600}
+                  height={300}
+                  className="rounded-xl border border-brand-navy/10 dark:border-white/10 w-full"
+                />
+
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-brand-navy dark:text-white">How to Download</h3>
+                  <ol className="list-decimal list-inside space-y-2 text-sm text-brand-navy/80 dark:text-white/70">
+                    <li>Log into <strong>SOLUS Student Centre</strong></li>
+                    <li>Select the <strong>Academic Records</strong> tile</li>
+                    <li>Select the <strong>View Grades</strong> navigation</li>
+                    <li>Select the appropriate <strong>Term/Career</strong> combination</li>
+                    <li>Select the <strong>Grade Distribution</strong> button to view a grade distribution report</li>
+                    <li>Download the PDF and then upload it on our website</li>
+                  </ol>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Main upload card */}
@@ -235,25 +264,27 @@ export default function AddCoursesPage() {
                 </div>
 
               ) : uploadPhase === "duplicate" ? (
-                /* ── DUPLICATE state — already contributed ── */
-                <div className="flex flex-col items-center text-center py-4 gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 dark:bg-emerald-400/10 ring-1 ring-emerald-500/20 dark:ring-emerald-400/15">
-                    <Sparkles className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-brand-navy dark:text-white mb-1">Already Contributed!</h3>
-                    <p className="text-sm text-brand-navy/65 dark:text-white/60 max-w-sm">
-                      {duplicateTerm
-                        ? `You've already submitted your ${duplicateTerm} grade distribution. Your contribution is counting — thanks for being part of the community.`
-                        : "You've already submitted a grade distribution for this term. Your contribution is counting — thanks for being part of the community."}
-                    </p>
+                /* ── DUPLICATE state — same term already processed ── */
+                <div className="flex flex-col items-center py-4 gap-4">
+                  <div className="flex items-start gap-3 w-full p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/20 dark:border-amber-400/15">
+                    <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div className="min-w-0 text-left">
+                      <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">
+                        Already uploaded
+                      </h3>
+                      <p className="text-xs text-amber-700/85 dark:text-amber-400/80 max-w-md">
+                        {duplicateTerm
+                          ? `You already submitted this term’s distribution (${duplicateTerm}). It’s already counted toward your contribution.`
+                          : "You already submitted a distribution for this term. It’s already counted toward your contribution."}
+                      </p>
+                    </div>
                   </div>
                   {duplicateTerm && (
-                    <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 dark:bg-emerald-400/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-400/15">
-                      {duplicateTerm} · Submitted ✓
+                    <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 dark:bg-amber-400/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 dark:border-amber-400/15">
+                      {duplicateTerm} · Already counted
                     </span>
                   )}
-                  <button onClick={handleReset} className="liquid-btn-red text-white rounded-full px-6 py-2.5 text-sm font-medium mt-1">
+                  <button type="button" onClick={handleReset} className="liquid-btn-red text-white rounded-full px-6 py-2.5 text-sm font-medium">
                     Upload Another File
                   </button>
                 </div>

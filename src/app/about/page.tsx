@@ -1,19 +1,14 @@
-"use client"
-
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Github,
   Linkedin,
-  Mail,
   ChevronRight,
-  ChevronDown,
   BarChart3,
   MessageSquare,
   Brain,
   Sparkles,
 } from "lucide-react"
 import Link from "next/link"
-import { useToast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
 import type { LucideIcon } from "lucide-react"
 import { ScrollButton } from "./_components/ScrollButton"

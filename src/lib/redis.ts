@@ -37,4 +37,18 @@ export const redis = {
       console.warn("[redis] del failed:", err)
     }
   },
+  delPattern: async (pattern: string): Promise<void> => {
+    try {
+      const client = getRedis()
+      if (!client) return
+      let cursor = 0
+      do {
+        const [nextCursor, keys] = await client.scan(cursor, { match: pattern, count: 100 })
+        if (keys.length > 0) await client.del(...(keys as [string, ...string[]]))
+        cursor = nextCursor
+      } while (cursor !== 0)
+    } catch (err) {
+      console.warn("[redis] delPattern failed:", err)
+    }
+  },
 }

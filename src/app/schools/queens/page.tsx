@@ -59,6 +59,10 @@ export default function QueensCourses() {
     parseFloat(searchParams.get("gpa_min") || "0"),
     parseFloat(searchParams.get("gpa_max") || "4.3"),
   ]);
+  const [debouncedGpaRange, setDebouncedGpaRange] = useState([
+    parseFloat(searchParams.get("gpa_min") || "0"),
+    parseFloat(searchParams.get("gpa_max") || "4.3"),
+  ]);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "ascending" | "descending";
@@ -74,6 +78,10 @@ export default function QueensCourses() {
     return { key: "availability", direction: "descending" };
   });
   const [enrollmentRange, setEnrollmentRange] = useState([
+    parseFloat(searchParams.get("enroll_min") || "0"),
+    parseFloat(searchParams.get("enroll_max") || "0"),
+  ]);
+  const [debouncedEnrollmentRange, setDebouncedEnrollmentRange] = useState([
     parseFloat(searchParams.get("enroll_min") || "0"),
     parseFloat(searchParams.get("enroll_max") || "0"),
   ]);
@@ -107,6 +115,7 @@ export default function QueensCourses() {
   );
   const coursesPerPage = 25;
 
+  const filterDebounceMs = 1200;
   const courseLevels = ["100", "200", "300", "400", "500"];
 
   // Fetch filter options on mount
@@ -115,14 +124,36 @@ export default function QueensCourses() {
     fetchSubjects().then(setSubjects);
   }, []);
 
-  // Debounce search input
+  // Debounce search input (only when live term differs from applied debounced value)
   useEffect(() => {
+    if (searchTerm === debouncedSearch) return;
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
       setCurrentPage(1);
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, debouncedSearch]);
+
+  // Debounce GPA and enrollment sliders to avoid overloading requests
+  useEffect(() => {
+    const gpaMatches =
+      debouncedGpaRange[0] === gpaRange[0] &&
+      debouncedGpaRange[1] === gpaRange[1];
+    const enrollmentMatches =
+      debouncedEnrollmentRange[0] === enrollmentRange[0] &&
+      debouncedEnrollmentRange[1] === enrollmentRange[1];
+    if (gpaMatches && enrollmentMatches) return;
+
+    setLoading(true);
+
+    const timer = setTimeout(() => {
+      setDebouncedGpaRange(gpaRange);
+      setDebouncedEnrollmentRange(enrollmentRange);
+      setCurrentPage(1);
+    }, filterDebounceMs);
+
+    return () => clearTimeout(timer);
+  }, [gpaRange, enrollmentRange, debouncedGpaRange, debouncedEnrollmentRange]);
 
   // Sync URL params
   const updateUrl = useCallback(
@@ -165,19 +196,17 @@ export default function QueensCourses() {
             selectedDepartments.length > 0 ? selectedDepartments : undefined,
           levels: selectedLevels.length > 0 ? selectedLevels : undefined,
           subjects: selectedSubjects.length > 0 ? selectedSubjects : undefined,
-          gpaMin: gpaRange[0],
-          gpaMax: gpaRange[1],
-          enrollmentMin: enrollmentRange[0],
-          enrollmentMax: enrollmentRange[1],
-          sortBy:
-            sortConfig.key as
-              | "code"
-              | "name"
-              | "gpa"
-              | "enrollment"
-              | "availability",
-          sortDir:
-            sortConfig.direction === "ascending" ? "asc" : "desc",
+          gpaMin: debouncedGpaRange[0],
+          gpaMax: debouncedGpaRange[1],
+          enrollmentMin: debouncedEnrollmentRange[0],
+          enrollmentMax: debouncedEnrollmentRange[1],
+          sortBy: sortConfig.key as
+            | "code"
+            | "name"
+            | "gpa"
+            | "enrollment"
+            | "availability",
+          sortDir: sortConfig.direction === "ascending" ? "asc" : "desc",
           hasData,
           availability:
             selectedAvailability.includes("data") &&
@@ -211,14 +240,18 @@ export default function QueensCourses() {
       subjects:
         selectedSubjects.length > 0 ? selectedSubjects.join(",") : undefined,
       gpa_min: gpaRange[0] > 0 ? String(gpaRange[0]) : undefined,
-      gpa_max: gpaRange[1] < 4.3 ? String(gpaRange[1]) : undefined,
+      gpa_max:
+        debouncedGpaRange[1] < 4.3 ? String(debouncedGpaRange[1]) : undefined,
       enroll_min:
-        enrollmentRange[0] > 0 ? String(enrollmentRange[0]) : undefined,
+        debouncedEnrollmentRange[0] > 0
+          ? String(debouncedEnrollmentRange[0])
+          : undefined,
       enroll_max:
-        enrollmentRange[1] > 0 ? String(enrollmentRange[1]) : undefined,
+        debouncedEnrollmentRange[1] > 0
+          ? String(debouncedEnrollmentRange[1])
+          : undefined,
       sort_by: sortConfig.key || undefined,
-      sort_dir:
-        sortConfig.direction === "ascending" ? "asc" : "desc",
+      sort_dir: sortConfig.direction === "ascending" ? "asc" : "desc",
       availability:
         selectedAvailability.includes("data") &&
         selectedAvailability.includes("comments")
@@ -236,8 +269,8 @@ export default function QueensCourses() {
     selectedLevels,
     selectedSubjects,
     selectedAvailability,
-    gpaRange,
-    enrollmentRange,
+    debouncedGpaRange,
+    debouncedEnrollmentRange,
     sortConfig,
   ]);
 
@@ -302,13 +335,26 @@ export default function QueensCourses() {
   }
 
   const resetFilters = () => {
+    const sortIsAtDefault =
+      sortConfig.key === "availability" &&
+      sortConfig.direction === "descending";
+    if (
+      !hasActiveFilters &&
+      sortIsAtDefault &&
+      searchTerm === "" &&
+      currentPage === 1
+    )
+      return;
+
     setSearchTerm("");
     setDebouncedSearch("");
     setSelectedDepartments([]);
     setSelectedLevels([]);
     setSelectedSubjects([]);
     setGpaRange([0, 4.3]);
+    setDebouncedGpaRange([0, 4.3]);
     setEnrollmentRange([0, 0]);
+    setDebouncedEnrollmentRange([0, 0]);
     setSelectedAvailability(["data", "comments"]);
     setSortConfig({ key: "availability", direction: "descending" });
     setCurrentPage(1);
@@ -427,13 +473,25 @@ export default function QueensCourses() {
 
         /* ── Dark-mode overrides ── */
         @keyframes gradient-shift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
         }
 
         :is(.dark) .gradient-text {
-          background: linear-gradient(-45deg, #4a9eff, #ff4d5e, #ffc940, #4a9eff);
+          background: linear-gradient(
+            -45deg,
+            #4a9eff,
+            #ff4d5e,
+            #ffc940,
+            #4a9eff
+          );
           background-size: 300% 300%;
           animation: gradient-shift 6s ease infinite;
           -webkit-background-clip: text;
@@ -483,12 +541,6 @@ export default function QueensCourses() {
 
       <div className="container py-12 px-4 lg-filters:px-6 relative z-10">
         <div className="mb-12 text-center lg-filters:text-left">
-          <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full glass-pill mb-4">
-            <span className="text-brand-navy dark:text-white text-sm font-medium mr-2">
-              Course Explorer
-            </span>
-            <span className="inline-flex rounded-full h-1.5 w-1.5 bg-brand-red"></span>
-          </div>
           <h1 className="text-3xl lg-filters:text-4xl font-bold mb-4">
             <span className="text-brand-navy dark:text-white">
               Queen's University
@@ -641,9 +693,7 @@ export default function QueensCourses() {
                           <CommandGroup heading="Show courses with">
                             <CommandItem
                               value="data-available"
-                              onSelect={() =>
-                                toggleAvailabilityTier("data")
-                              }
+                              onSelect={() => toggleAvailabilityTier("data")}
                               className="flex items-center"
                             >
                               <div className="mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary">
@@ -661,9 +711,9 @@ export default function QueensCourses() {
                               className="flex items-center"
                             >
                               <div className="mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary">
-                                {selectedAvailability.includes(
-                                  "comments",
-                                ) && <Check className="h-3 w-3" />}
+                                {selectedAvailability.includes("comments") && (
+                                  <Check className="h-3 w-3" />
+                                )}
                               </div>
                               <span>Comments only</span>
                             </CommandItem>
@@ -977,8 +1027,7 @@ export default function QueensCourses() {
                             className="flex items-center"
                             onClick={() => requestSort("availability")}
                           >
-                            Data Availability{" "}
-                            {getSortIcon("availability")}
+                            Data Availability {getSortIcon("availability")}
                           </button>
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-brand-navy dark:text-white">
@@ -1022,11 +1071,15 @@ export default function QueensCourses() {
                             </td>
                             <td className="px-4 py-3 text-sm">
                               {course.averageGPA > 0 ? (
-                                <span className={`font-medium ${getGpaColor(course.averageGPA)}`}>
+                                <span
+                                  className={`font-medium ${getGpaColor(course.averageGPA)}`}
+                                >
                                   {course.averageGPA.toFixed(1)}
                                 </span>
                               ) : (
-                                <span className="font-medium text-muted-foreground">N/A</span>
+                                <span className="font-medium text-muted-foreground">
+                                  N/A
+                                </span>
                               )}
                             </td>
                             <td className="px-4 py-3 text-sm">
@@ -1133,7 +1186,10 @@ export default function QueensCourses() {
                 </a>
                 !
               </p>
-              <form onSubmit={handleCatalogSearch} className="flex gap-2 items-stretch">
+              <form
+                onSubmit={handleCatalogSearch}
+                className="flex gap-2 items-stretch"
+              >
                 <div className="flex-1 search-glass">
                   <div className="relative">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-md bg-brand-navy/10 dark:bg-blue-400/10">
