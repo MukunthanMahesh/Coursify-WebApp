@@ -67,7 +67,8 @@ function parseCourseLine(line: string): ParsedCourseRow | null {
   const codeMatch = trimmed.match(/^([A-Z]{2,5}\s+\d{3}[A-Z]?)\s+/);
   if (!codeMatch) return null;
 
-  const courseCode = codeMatch[1];
+  // Strip trailing letter suffix from full-year courses (e.g. "MATH 121B" → "MATH 121")
+  const courseCode = codeMatch[1].replace(/[A-Z]$/, "");
   const rest = trimmed.slice(codeMatch[0].length).trim();
 
   // Split remaining tokens - last 14 are: enrollment + 13 grade percentages
