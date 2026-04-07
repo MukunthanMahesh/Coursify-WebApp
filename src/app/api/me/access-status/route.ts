@@ -54,16 +54,25 @@ export async function GET(request: NextRequest) {
 
   const is_exempt = required_uploads === 0;
 
-  // Deadline schedule — Summer skipped (optional semester, most students don't attend).
-  // No free period: the last due term stays required until uploaded, even between deadlines.
-  // Jan–Feb: Winter YYYY-1  |  Mar–May: Fall YYYY-1  |  Jun–Dec: Winter YYYY
-  function getDueTerm(): string {
+  // Seasonal gate enforcement windows (Summer skipped — optional semester):
+  //   Feb 1 – Apr 28: Fall YYYY-1 required  (Fall grades post to SOLUS ~Feb)
+  //   May 15 – Aug 15: Winter YYYY required  (Winter grades post to SOLUS ~May)
+  //   All other dates: free period, no seasonal gate
+  function getDueTerm(): string | null {
     const now = new Date();
     const month = now.getMonth() + 1; // 1–12
-    const year = now.getFullYear();
-    if (month <= 2)  return `Winter ${year - 1}`; // Jan–Feb: Winter of previous year
-    if (month <= 5)  return `Fall ${year - 1}`;   // Mar–May: Fall of previous year
-    return `Winter ${year}`;                       // Jun–Dec: Winter of current year
+    const day   = now.getDate();
+    const year  = now.getFullYear();
+
+    // Window 1: Feb 1 – Apr 28 → Fall of previous year
+    if (month === 2 || month === 3 || (month === 4 && day <= 28)) {
+      return `Fall ${year - 1}`;
+    }
+    // Window 2: May 15 – Aug 15 → Winter of current year
+    if ((month === 5 && day >= 15) || month === 6 || month === 7 || (month === 8 && day <= 15)) {
+      return `Winter ${year}`;
+    }
+    return null; // free period
   }
 
   // Only non-exempt, onboarded users are subject to seasonal gates
