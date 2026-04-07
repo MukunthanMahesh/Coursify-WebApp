@@ -15,6 +15,63 @@ import { ScrollButton } from "./_components/ScrollButton"
 import { EmailCopyButton } from "./_components/EmailCopyButton"
 import Footer from "@/components/Footer"
 
+const teamMembers = [
+  {
+    initials: "AJ",
+    name: "Amaan Javed",
+    role: "Team Lead",
+    details: "Queen's Computing '27",
+    accent: "from-brand-navy/80 to-brand-navy",
+    github: "https://github.com/amaanjaved1",
+    linkedin: "https://www.linkedin.com/in/amaan-javed/",
+    email: "amaan.javed@queensu.ca",
+    emailName: "Amaan",
+  },
+  {
+    initials: "AA",
+    name: "Aayush Aryal",
+    role: "Lead Web Developer",
+    details: "Queen's Computing '28",
+    accent: "from-brand-red/80 to-brand-red",
+    github: "https://github.com/aayusha59",
+    linkedin: "https://www.linkedin.com/in/aayush-aryal1/",
+    email: "23wv35@queensu.ca",
+    emailName: "Aayush",
+  },
+  {
+    initials: "MA",
+    name: "Momin Alvi",
+    role: "Team Member",
+    details: "Queen's Computing '27",
+    accent: "from-brand-gold/80 to-brand-gold",
+    github: "https://github.com/mominalvi",
+    linkedin: "https://www.linkedin.com/in/momin-alvi/",
+    email: "momin.alvi@queensu.ca",
+    emailName: "Momin Alvi",
+  },
+  {
+    initials: "HK",
+    name: "Hiba Khurram",
+    role: "Team Member",
+    details: "Queen's Computing '28",
+    accent: "from-brand-navy/70 to-brand-red/80",
+    linkedin: "https://www.linkedin.com/in/hiba-khurram-6999612aa/",
+    email: "23cm46@queensu.ca",
+    emailName: "Hiba Khurram",
+  },
+  {
+    initials: "MM",
+    name: "Mukunthan Mahesh",
+    role: "Team Member",
+    details: "Queen's Computing '27",
+    accent: "from-brand-red/70 to-brand-gold/80",
+    github: "https://github.com/MukunthanMahesh",
+    linkedin: "https://www.linkedin.com/in/mukunthan-mahesh/",
+    email: "mukunthan.m@queensu.ca",
+    emailName: "Mukunthan Mahesh",
+  },
+] as const
+
 export default function About() {
   return (
     <div className="relative min-h-screen overflow-x-clip pt-20">
@@ -164,78 +221,49 @@ export default function About() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto py-2">
-              <Card className="static-glass-card rounded-2xl border-0 h-full">
-                <CardContent className="p-6 h-full">
-                  <div className="flex flex-col items-center text-center h-full">
-                    <div className="w-20 h-20 bg-gradient-to-br from-brand-navy/80 to-brand-navy rounded-full flex items-center justify-center mb-4 shadow-lg">
-                      <span className="text-xl font-bold text-white">AJ</span>
-                    </div>
-                    <h3 className="text-lg font-bold text-brand-navy dark:text-white">Amaan Javed</h3>
-                    <p className="text-brand-red mb-3">Team Lead</p>
-                    <p className="mb-4 text-gray-600 dark:text-gray-400 text-sm flex-grow">Queen&apos;s Computing &apos;27</p>
-                    <div className="flex space-x-3 mt-auto">
-                      <a
-                        href="https://github.com/amaanjaved1"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-400 dark:text-gray-500"
+            <div className="grid grid-cols-1 gap-6 max-w-6xl mx-auto py-2 md:grid-cols-2 xl:grid-cols-3">
+              {teamMembers.map(({ initials, name, role, details, accent, github, linkedin, email, emailName }) => (
+                <Card key={name} className="glass-card rounded-2xl border-0 h-full">
+                  <CardContent className="p-6 h-full">
+                    <div className="flex flex-col items-center text-center h-full">
+                      <div
+                        className={cn(
+                          "w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg bg-gradient-to-br",
+                          accent
+                        )}
                       >
-                        <Github className="h-4 w-4" />
-                      </a>
-                      <a
-                        href="https://www.linkedin.com/in/amaan-javed/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-400 dark:text-gray-500"
-                      >
-                        <Linkedin className="h-4 w-4" />
-                      </a>
-                      <EmailCopyButton
-                        email="amaan.javed@queensu.ca"
-                        name="Amaan"
-                        className="text-gray-400 dark:text-gray-500"
-                      />
+                        <span className="text-xl font-bold text-white">{initials}</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-brand-navy dark:text-white">{name}</h3>
+                      <p className="text-brand-red mb-3">{role}</p>
+                      <p className="mb-4 text-gray-600 dark:text-gray-400 text-sm flex-grow">{details}</p>
+                      <div className="flex space-x-3 mt-auto">
+                        {github ? (
+                          <a
+                            href={github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`GitHub profile for ${name}`}
+                            className="text-gray-400 dark:text-gray-500 hover:text-brand-navy dark:hover:text-blue-400 transition-colors duration-300"
+                          >
+                            <Github className="h-4 w-4" />
+                          </a>
+                        ) : null}
+                        <a
+                          href={linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`LinkedIn profile for ${name}`}
+                          className="text-gray-400 dark:text-gray-500 hover:text-brand-navy dark:hover:text-blue-400 transition-colors duration-300"
+                        >
+                          <Linkedin className="h-4 w-4" />
+                        </a>
+                        {email && emailName ? <EmailCopyButton email={email} name={emailName} /> : null}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="static-glass-card rounded-2xl border-0 h-full">
-                <CardContent className="p-6 h-full">
-                  <div className="flex flex-col items-center text-center h-full">
-                    <div className="w-20 h-20 bg-gradient-to-br from-brand-red/80 to-brand-red rounded-full flex items-center justify-center mb-4 shadow-lg">
-                      <span className="text-xl font-bold text-white">AA</span>
-                    </div>
-                    <h3 className="text-lg font-bold text-brand-navy dark:text-white">Aayush Aryal</h3>
-                    <p className="text-brand-red mb-3">Lead Web Developer</p>
-                    <p className="mb-4 text-gray-600 dark:text-gray-400 text-sm flex-grow">Queen&apos;s Computing &apos;28</p>
-                    <div className="flex space-x-3 mt-auto">
-                      <a
-                        href="https://github.com/aayusha59"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-400 dark:text-gray-500"
-                      >
-                        <Github className="h-4 w-4" />
-                      </a>
-                      <a
-                        href="https://www.linkedin.com/in/aayush-aryal1/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-400 dark:text-gray-500"
-                      >
-                        <Linkedin className="h-4 w-4" />
-                      </a>
-                      <EmailCopyButton
-                        email="23wv35@queensu.ca"
-                        name="Aayush"
-                        className="text-gray-400 dark:text-gray-500"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </div>
