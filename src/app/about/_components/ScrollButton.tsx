@@ -3,11 +3,15 @@
 import { ChevronDown } from "lucide-react"
 
 export function ScrollButton() {
+  const scrollToFeatures = () => {
+    document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })
+  }
+
   return (
     <button
       type="button"
-      onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
-      className="liquid-btn-red group inline-block w-full text-center text-white px-7 py-3 rounded-xl font-medium sm:w-auto"
+      onClick={scrollToFeatures}
+      className="liquid-btn-red group text-white px-7 py-3 rounded-xl font-medium w-full sm:w-auto inline-block text-center"
     >
       <span className="relative z-10 flex items-center justify-center">
         See Features

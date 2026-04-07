@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils"
 import type { LucideIcon } from "lucide-react"
 import { ScrollButton } from "./_components/ScrollButton"
 import { EmailCopyButton } from "./_components/EmailCopyButton"
+import Footer from "@/components/Footer"
 
 const teamMembers = [
   {
@@ -87,13 +88,12 @@ export default function About() {
             className="pointer-events-none absolute right-0 top-8 h-44 w-44 rounded-full blur-[120px] opacity-75"
             style={{ background: "radial-gradient(circle, rgba(214,40,57,0.14) 0%, rgba(214,40,57,0.05) 42%, transparent 74%)" }}
           />
-          <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full glass-pill mb-4">
+          <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full static-glass-pill mb-4">
             <span className="text-sm font-semibold text-brand-navy dark:text-white">Our Story</span>
             <Sparkles className="h-3.5 w-3.5 shrink-0 text-brand-gold" strokeWidth={2} aria-hidden />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="text-brand-navy dark:text-white">About</span>{" "}
-            <span className="text-brand-red">Coursify</span>
+            <span className="text-brand-navy dark:text-white">About</span> <span className="text-brand-red">Coursify</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-6">
             Helping Queen&apos;s University students make informed academic decisions through data and AI.
@@ -103,7 +103,7 @@ export default function About() {
 
         {/* Mission & Stats */}
         <div className="mx-auto mb-20 grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
-          <div className="glass-card flex h-full flex-col gap-6 rounded-2xl p-8">
+          <div className="static-glass-card flex h-full flex-col gap-6 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-brand-navy dark:text-white">Our Mission</h2>
             <div className="min-h-0 flex-1 space-y-4">
               <p className="text-gray-700 dark:text-gray-300">
@@ -123,7 +123,7 @@ export default function About() {
             <div className="shrink-0">
               <Link
                 href="/schools/queens"
-                className="liquid-btn-blue group inline-block w-full text-center text-white px-7 py-3 rounded-xl font-medium sm:w-auto"
+                className="liquid-btn-blue group inline-block w-full text-center text-white px-7 py-3 rounded-xl font-medium sm:w-auto mt-auto"
               >
                 <span className="relative z-10 flex items-center justify-center">
                   Explore Courses
@@ -133,7 +133,7 @@ export default function About() {
             </div>
           </div>
 
-          <div className="glass-card flex h-full flex-col rounded-2xl p-8">
+          <div className="static-glass-card flex h-full flex-col rounded-2xl p-8">
             <h2 className="mb-6 text-2xl font-bold tracking-tight text-brand-navy dark:text-white">
               Platform Stats
             </h2>
@@ -178,10 +178,7 @@ export default function About() {
               ).map(({ Icon, value, label, iconWrap, iconClass }) => (
                 <div
                   key={label}
-                  className={cn(
-                    "group rounded-xl border border-black/[0.06] bg-black/[0.02] p-5 text-center transition-[transform,box-shadow] duration-300 dark:border-white/[0.08] dark:bg-white/[0.04]",
-                    "hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/[0.06] dark:hover:shadow-lg dark:hover:shadow-black/25"
-                  )}
+                  className="rounded-xl border border-black/[0.06] bg-black/[0.02] p-5 text-center dark:border-white/[0.08] dark:bg-white/[0.04]"
                 >
                   <div
                     className={cn(
@@ -215,7 +212,7 @@ export default function About() {
           />
           <div className="relative z-10">
             <div className="text-center mb-10">
-              <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full glass-pill mb-4">
+              <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full static-glass-pill mb-4">
                 <span className="text-brand-red text-sm font-semibold">Our Team</span>
               </div>
               <h2 className="text-3xl font-bold mb-4 text-brand-navy dark:text-white">Meet the Team</h2>
@@ -282,7 +279,7 @@ export default function About() {
             style={{ background: "radial-gradient(circle, rgba(0,48,95,0.12) 0%, rgba(0,48,95,0.04) 46%, transparent 76%)" }}
           />
           <div className="relative z-10">
-            <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full glass-pill mb-4">
+            <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full static-glass-pill mb-4">
               <span className="text-brand-gold text-sm font-semibold">Features</span>
             </div>
             <h2 className="text-3xl font-bold mb-6 text-brand-navy dark:text-white">What Coursify Offers</h2>
@@ -291,7 +288,7 @@ export default function About() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-2">
-              <div className="glass-card rounded-2xl p-6">
+              <div className="static-glass-card rounded-2xl p-6">
                 <div className="w-12 h-12 bg-brand-navy/10 dark:bg-blue-400/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <BarChart3 className="h-5 w-5 text-brand-navy dark:text-blue-400" />
                 </div>
@@ -301,7 +298,7 @@ export default function About() {
                 </p>
               </div>
 
-              <div className="glass-card rounded-2xl p-6">
+              <div className="static-glass-card rounded-2xl p-6">
                 <div className="w-12 h-12 bg-brand-red/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <MessageSquare className="h-5 w-5 text-brand-red" />
                 </div>
@@ -311,7 +308,7 @@ export default function About() {
                 </p>
               </div>
 
-              <div className="glass-card rounded-2xl p-6">
+              <div className="static-glass-card rounded-2xl p-6">
                 <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Brain className="h-5 w-5 text-brand-gold" />
                 </div>
@@ -332,7 +329,7 @@ export default function About() {
           <div className="absolute right-[10%] bottom-6 h-80 w-80 blur-[155px] opacity-75 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(214,40,57,0.14) 0%, rgba(214,40,57,0.05) 44%, transparent 76%)' }} />
           <div className="container mx-auto px-4 sm:px-6 md:px-8 relative z-10">
             <div className="max-w-2xl mx-auto text-center">
-              <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full glass-pill mb-4">
+              <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full static-glass-pill mb-4">
                 <span className="text-brand-navy dark:text-blue-400 text-sm font-semibold">Open Source</span>
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 leading-tight text-brand-navy dark:text-white">
@@ -381,45 +378,7 @@ export default function About() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="relative border-t border-black/[0.06] dark:border-white/10 py-4 bg-[var(--page-bg)]">
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-2">
-            <div className="mb-1 md:mb-0">
-              <Link href="/" className="inline-flex items-center mb-1 shrink-0">
-                <span className="text-sm font-bold tracking-tight text-brand-navy dark:text-white">Cours</span>
-                <span className="text-sm font-bold tracking-tight text-brand-red">ify</span>
-              </Link>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Platform for{" "}
-                <span className="font-medium text-brand-navy dark:text-white">
-                  Queen&apos;s Students
-                </span>{" "}
-                by{" "}
-                <span className="font-medium text-brand-navy dark:text-white">
-                  Queen&apos;s Students
-                </span>
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 italic">
-                Not affiliated with or endorsed by Queen&apos;s University
-              </p>
-            </div>
-
-            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2">
-              <span className="font-medium text-brand-navy dark:text-white">
-                © {new Date().getFullYear()} Coursify
-              </span>
-              <span className="text-gray-300 dark:text-gray-600">•</span>
-              <Link
-                href="/about"
-                className="text-brand-navy dark:text-blue-400 hover:text-brand-red dark:hover:text-red-400 transition-colors duration-200 font-medium"
-              >
-                About Us
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
