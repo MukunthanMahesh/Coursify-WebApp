@@ -29,6 +29,7 @@ type TeamMember = {
   role: string
   details: string
   accent: string
+  isMaintainer?: boolean
   github?: string
   linkedin: string
   email?: string
@@ -39,6 +40,13 @@ type OpenSourceRepo = ContributorRepoConfig & {
   buttonClass: string
 }
 
+type ContributorHighlight = {
+  rowClassName: string
+  rankClassName: string
+  accentClassName: string
+  contributionPrefix: string | null
+}
+
 const teamMembers: readonly TeamMember[] = [
   {
     initials: "AJ",
@@ -46,6 +54,7 @@ const teamMembers: readonly TeamMember[] = [
     role: "Team Lead",
     details: "Queen's Computing '27",
     accent: "from-brand-navy/80 to-brand-navy",
+    isMaintainer: true,
     github: "https://github.com/amaanjaved1",
     linkedin: "https://www.linkedin.com/in/amaan-javed/",
     email: "amaan.javed@queensu.ca",
@@ -57,44 +66,26 @@ const teamMembers: readonly TeamMember[] = [
     role: "Lead Web Developer",
     details: "Queen's Computing '28",
     accent: "from-brand-red/80 to-brand-red",
+    isMaintainer: true,
     github: "https://github.com/aayusha59",
     linkedin: "https://www.linkedin.com/in/aayush-aryal1/",
     email: "23wv35@queensu.ca",
     emailName: "Aayush",
   },
   {
-    initials: "MA",
-    name: "Momin Alvi",
-    role: "Team Member",
-    details: "Queen's Computing '27",
-    accent: "from-brand-gold/80 to-brand-gold",
-    github: "https://github.com/mominalvi",
-    linkedin: "https://www.linkedin.com/in/momin-alvi/",
-    email: "momin.alvi@queensu.ca",
-    emailName: "Momin Alvi",
-  },
-  {
     initials: "HK",
     name: "Hiba Khurram",
-    role: "Team Member",
+    role: "Marketing & Outreach",
     details: "Queen's Computing '28",
     accent: "from-brand-navy/70 to-brand-red/80",
     linkedin: "https://www.linkedin.com/in/hiba-khurram-6999612aa/",
     email: "23cm46@queensu.ca",
     emailName: "Hiba Khurram",
   },
-  {
-    initials: "MM",
-    name: "Mukunthan Mahesh",
-    role: "Team Member",
-    details: "Queen's Computing '27",
-    accent: "from-brand-red/70 to-brand-gold/80",
-    github: "https://github.com/MukunthanMahesh",
-    linkedin: "https://www.linkedin.com/in/mukunthan-mahesh/",
-    email: "mukunthan.m@queensu.ca",
-    emailName: "Mukunthan Mahesh",
-  },
 ] as const
+
+const featuredTeamMembers = teamMembers.slice(0, 2)
+const supportingTeamMembers = teamMembers.slice(2)
 
 const openSourceRepos: readonly OpenSourceRepo[] = [
   {
@@ -123,6 +114,7 @@ const openSourceRepos: readonly OpenSourceRepo[] = [
 function getMaintainerUsernames(members: readonly TeamMember[]): Set<string> {
   return new Set(
     members
+      .filter(({ isMaintainer }) => isMaintainer)
       .map(({ github }) => extractGithubUsername(github))
       .filter((username): username is string => Boolean(username))
   )
@@ -134,6 +126,104 @@ function formatContributionCount(contributions: number): string {
 
 function getContributorFallback(login: string): string {
   return login.slice(0, 2).toUpperCase()
+}
+
+function getContributorHighlight(index: number): ContributorHighlight {
+  if (index === 0) {
+    return {
+      rowClassName:
+        "border-brand-gold/18 bg-white/[0.6] dark:border-brand-gold/16 dark:bg-white/[0.04]",
+      rankClassName:
+        "border-brand-gold/24 bg-white/90 text-brand-navy dark:border-brand-gold/18 dark:bg-neutral-900 dark:text-white",
+      accentClassName: "bg-brand-gold/55 dark:bg-brand-gold/70",
+      contributionPrefix: "🥇",
+    }
+  }
+
+  if (index === 1) {
+    return {
+      rowClassName:
+        "border-black/[0.08] bg-white/[0.6] dark:border-white/11 dark:bg-white/[0.04]",
+      rankClassName:
+        "border-black/[0.08] bg-white/90 text-brand-navy dark:border-white/12 dark:bg-neutral-900 dark:text-white",
+      accentClassName: "bg-slate-400/55 dark:bg-white/40",
+      contributionPrefix: "🥈",
+    }
+  }
+
+  if (index === 2) {
+    return {
+      rowClassName:
+        "border-amber-500/16 bg-white/[0.6] dark:border-amber-400/14 dark:bg-white/[0.04]",
+      rankClassName:
+        "border-amber-500/18 bg-white/90 text-brand-navy dark:border-amber-400/16 dark:bg-neutral-900 dark:text-white",
+      accentClassName: "bg-amber-500/45 dark:bg-amber-400/55",
+      contributionPrefix: "🥉",
+    }
+  }
+
+  return {
+    rowClassName: "border-black/[0.06] bg-white/[0.56] dark:border-white/[0.08] dark:bg-white/[0.03]",
+    rankClassName:
+      "border-white/80 bg-white/85 text-brand-navy dark:border-white/10 dark:bg-neutral-900 dark:text-white",
+    accentClassName: "",
+    contributionPrefix: null,
+  }
+}
+
+function renderTeamMemberCard({
+  initials,
+  name,
+  role,
+  details,
+  accent,
+  github,
+  linkedin,
+  email,
+  emailName,
+}: TeamMember) {
+  return (
+    <Card key={name} className="glass-card rounded-2xl border-0 h-full">
+      <CardContent className="p-6 h-full">
+        <div className="flex flex-col items-center text-center h-full">
+          <div
+            className={cn(
+              "w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg bg-gradient-to-br",
+              accent
+            )}
+          >
+            <span className="text-xl font-bold text-white">{initials}</span>
+          </div>
+          <h3 className="text-lg font-bold text-brand-navy dark:text-white">{name}</h3>
+          <p className="text-brand-red mb-3">{role}</p>
+          <p className="mb-4 text-gray-600 dark:text-gray-400 text-sm flex-grow">{details}</p>
+          <div className="flex space-x-3 mt-auto">
+            {github ? (
+              <a
+                href={github}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`GitHub profile for ${name}`}
+                className="text-gray-400 dark:text-gray-500 hover:text-brand-navy dark:hover:text-blue-400 transition-colors duration-300"
+              >
+                <Github className="h-4 w-4" />
+              </a>
+            ) : null}
+            <a
+              href={linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`LinkedIn profile for ${name}`}
+              className="text-gray-400 dark:text-gray-500 hover:text-brand-navy dark:hover:text-blue-400 transition-colors duration-300"
+            >
+              <Linkedin className="h-4 w-4" />
+            </a>
+            {email && emailName ? <EmailCopyButton email={email} name={emailName} /> : null}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default async function About() {
@@ -148,7 +238,7 @@ export default async function About() {
     <div className="relative min-h-screen overflow-x-clip pt-20">
       <div className="container pt-12 pb-0 px-4 md:px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div className="relative mb-16 max-w-3xl mx-auto text-center">
+        <div className="relative mb-20 max-w-3xl mx-auto text-center">
           <div
             aria-hidden
             className="pointer-events-none absolute -left-10 top-6 h-48 w-48 rounded-full blur-[120px] opacity-80"
@@ -347,52 +437,22 @@ export default async function About() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 max-w-6xl mx-auto py-2 md:grid-cols-2 xl:grid-cols-3">
-              {teamMembers.map(({ initials, name, role, details, accent, github, linkedin, email, emailName }) => (
-                <Card key={name} className="glass-card rounded-2xl border-0 h-full">
-                  <CardContent className="p-6 h-full">
-                    <div className="flex flex-col items-center text-center h-full">
-                      <div
-                        className={cn(
-                          "w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg bg-gradient-to-br",
-                          accent
-                        )}
-                      >
-                        <span className="text-xl font-bold text-white">{initials}</span>
-                      </div>
-                      <h3 className="text-lg font-bold text-brand-navy dark:text-white">{name}</h3>
-                      <p className="text-brand-red mb-3">{role}</p>
-                      <p className="mb-4 text-gray-600 dark:text-gray-400 text-sm flex-grow">{details}</p>
-                      <div className="flex space-x-3 mt-auto">
-                        {github ? (
-                          <a
-                            href={github}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={`GitHub profile for ${name}`}
-                            className="text-gray-400 dark:text-gray-500 hover:text-brand-navy dark:hover:text-blue-400 transition-colors duration-300"
-                          >
-                            <Github className="h-4 w-4" />
-                          </a>
-                        ) : null}
-                        <a
-                          href={linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`LinkedIn profile for ${name}`}
-                          className="text-gray-400 dark:text-gray-500 hover:text-brand-navy dark:hover:text-blue-400 transition-colors duration-300"
-                        >
-                          <Linkedin className="h-4 w-4" />
-                        </a>
-                        {email && emailName ? <EmailCopyButton email={email} name={emailName} /> : null}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="grid grid-cols-1 gap-6 max-w-4xl mx-auto py-2 md:grid-cols-2">
+              {featuredTeamMembers.map(renderTeamMemberCard)}
             </div>
 
-            <div className="mx-auto mt-10 max-w-6xl animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
+            <div
+              className={cn(
+                "grid grid-cols-1 gap-6 mx-auto pt-6",
+                supportingTeamMembers.length === 1
+                  ? "max-w-md"
+                  : "max-w-6xl md:grid-cols-2 xl:grid-cols-3"
+              )}
+            >
+              {supportingTeamMembers.map(renderTeamMemberCard)}
+            </div>
+
+            <div className="mx-auto mt-20 max-w-6xl">
               <div className="relative overflow-hidden rounded-[28px] static-glass-card p-6 sm:p-8">
                 <div
                   aria-hidden
@@ -441,59 +501,89 @@ export default async function About() {
                           <ol className="space-y-3">
                             {communityContributors.map((contributor, index) => (
                               <li key={contributor.login} className="relative">
-                                <div className="group flex items-start gap-4 rounded-2xl border border-black/[0.06] bg-white/[0.56] px-4 py-4 transition-all duration-300 hover:border-brand-navy/15 hover:bg-white/[0.74] dark:border-white/[0.08] dark:bg-white/[0.03] dark:hover:border-white/[0.14] dark:hover:bg-white/[0.05]">
-                                  <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/80 bg-white/85 text-[11px] font-bold tabular-nums text-brand-navy shadow-sm dark:border-white/10 dark:bg-neutral-900 dark:text-white">
-                                    {String(index + 1).padStart(2, "0")}
-                                  </div>
-                                  <div className="flex min-w-0 flex-1 items-start gap-3">
-                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/70 bg-gradient-to-br from-brand-navy/12 via-white to-brand-red/12 shadow-sm dark:border-white/10 dark:from-brand-navy/18 dark:via-neutral-900 dark:to-brand-red/18">
-                                      {contributor.avatarUrl ? (
-                                        <img
-                                          src={contributor.avatarUrl}
-                                          alt={`GitHub avatar for ${contributor.login}`}
-                                          className="h-full w-full object-cover"
-                                          loading="lazy"
-                                        />
-                                      ) : (
-                                        <span className="text-sm font-semibold text-brand-navy dark:text-white">
-                                          {getContributorFallback(contributor.login)}
-                                        </span>
+                                {(() => {
+                                  const highlight = getContributorHighlight(index)
+
+                                  return (
+                                    <div
+                                      className={cn(
+                                        "relative flex items-start gap-4 rounded-2xl border px-4 py-4 shadow-sm",
+                                        highlight.rowClassName
                                       )}
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                        <a
-                                          href={contributor.profileUrl}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="inline-flex min-w-0 items-center gap-1.5 font-semibold text-brand-navy transition-colors duration-300 hover:text-brand-red dark:text-white dark:hover:text-brand-gold"
-                                        >
-                                          <span className="truncate">@{contributor.login}</span>
-                                          <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-60 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                                        </a>
-                                        <span className="text-xs font-medium uppercase tracking-[0.18em] text-brand-navy/45 dark:text-white/40">
-                                          {formatContributionCount(contributor.totalContributions)}
-                                        </span>
+                                    >
+                                      {highlight.contributionPrefix ? (
+                                        <div
+                                          className={cn(
+                                            "absolute inset-y-4 left-0.5 w-1 rounded-full",
+                                            highlight.accentClassName
+                                          )}
+                                          aria-hidden
+                                        />
+                                      ) : null}
+                                      <div
+                                        className={cn(
+                                          "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold tabular-nums shadow-sm",
+                                          highlight.rankClassName
+                                        )}
+                                      >
+                                        {String(index + 1).padStart(2, "0")}
                                       </div>
-                                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                        Across {contributor.repos.length} public {contributor.repos.length === 1 ? "repository" : "repositories"}
-                                      </p>
-                                      <div className="mt-3 flex flex-wrap gap-2">
-                                        {contributor.repos.map((repo) => (
-                                          <a
-                                            key={repo.href}
-                                            href={repo.href}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center rounded-full border border-brand-navy/10 bg-brand-navy/[0.05] px-2.5 py-1 text-[11px] font-medium text-brand-navy transition-colors duration-300 hover:border-brand-red/20 hover:text-brand-red dark:border-white/10 dark:bg-white/[0.05] dark:text-white/80 dark:hover:border-brand-gold/25 dark:hover:text-brand-gold"
-                                          >
-                                            {repo.label}
-                                          </a>
-                                        ))}
+                                      <div className="flex min-w-0 flex-1 items-start gap-3">
+                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/70 bg-gradient-to-br from-brand-navy/12 via-white to-brand-red/12 shadow-sm dark:border-white/10 dark:from-brand-navy/18 dark:via-neutral-900 dark:to-brand-red/18">
+                                          {contributor.avatarUrl ? (
+                                            <img
+                                              src={contributor.avatarUrl}
+                                              alt={`GitHub avatar for ${contributor.login}`}
+                                              className="h-full w-full object-cover"
+                                              loading="lazy"
+                                            />
+                                          ) : (
+                                            <span className="text-sm font-semibold text-brand-navy dark:text-white">
+                                              {getContributorFallback(contributor.login)}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                          <div className="flex flex-wrap items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                              <a
+                                                href={contributor.profileUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex min-w-0 items-center gap-1.5 font-semibold text-brand-navy dark:text-white"
+                                              >
+                                                <span className="truncate">@{contributor.login}</span>
+                                                <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                                              </a>
+                                              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                                Across {contributor.repos.length} public {contributor.repos.length === 1 ? "repository" : "repositories"}
+                                              </p>
+                                            </div>
+                                            <div aria-label={formatContributionCount(contributor.totalContributions)} className="shrink-0 pt-0.5 text-right">
+                                              <p className="text-sm font-medium leading-tight tabular-nums text-brand-navy/58 dark:text-white/62">
+                                                {highlight.contributionPrefix ? `${highlight.contributionPrefix} ` : null}
+                                                {formatContributionCount(contributor.totalContributions)}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <div className="mt-3 flex flex-wrap gap-2">
+                                            {contributor.repos.map((repo) => (
+                                              <a
+                                                key={repo.href}
+                                                href={repo.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center rounded-full border border-brand-navy/10 bg-brand-navy/[0.05] px-2.5 py-1 text-[11px] font-medium text-brand-navy dark:border-white/10 dark:bg-white/[0.05] dark:text-white/80"
+                                              >
+                                                {repo.label}
+                                              </a>
+                                            ))}
+                                          </div>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                </div>
+                                  )
+                                })()}
                               </li>
                             ))}
                           </ol>
@@ -520,7 +610,7 @@ export default async function About() {
                               href={repo.href}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-full border border-brand-navy/12 bg-brand-navy/[0.05] px-3 py-1.5 text-sm font-medium text-brand-navy transition-colors duration-300 hover:border-brand-red/25 hover:text-brand-red dark:border-white/10 dark:bg-white/[0.05] dark:text-white/85 dark:hover:border-brand-gold/25 dark:hover:text-brand-gold"
+                              className="inline-flex items-center gap-1.5 rounded-full border border-brand-navy/12 bg-brand-navy/[0.05] px-3 py-1.5 text-sm font-medium text-brand-navy dark:border-white/10 dark:bg-white/[0.05] dark:text-white/85"
                             >
                               {repo.label}
                               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -539,7 +629,7 @@ export default async function About() {
 
       {/* Open Source */}
       <div className="w-full">
-        <div className="relative left-1/2 w-[100dvw] -translate-x-1/2 section-glass py-10 sm:py-14 px-4 overflow-hidden">
+        <div className="relative left-1/2 w-[100dvw] -translate-x-1/2 section-glass py-8 sm:py-10 px-4 overflow-hidden">
           <div className="absolute left-[10%] top-10 h-72 w-72 blur-[145px] opacity-80 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,48,95,0.14) 0%, rgba(0,48,95,0.05) 46%, transparent 76%)' }} />
           <div className="absolute right-[10%] bottom-6 h-80 w-80 blur-[155px] opacity-75 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(214,40,57,0.14) 0%, rgba(214,40,57,0.05) 44%, transparent 76%)' }} />
           <div className="container mx-auto px-4 sm:px-6 md:px-8 relative z-10">
@@ -550,10 +640,10 @@ export default async function About() {
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 leading-tight text-brand-navy dark:text-white">
                 Built in the Open
               </h2>
-              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-7 max-w-2xl mx-auto">
+              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
                 We&apos;ve open-sourced our entire codebase so students can contribute improvements and so other schools can set up a similar platform for their own students.
               </p>
-              <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 mb-7">
+              <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3">
                 {openSourceRepos.map((repo) => (
                   <a
                     key={repo.href}
