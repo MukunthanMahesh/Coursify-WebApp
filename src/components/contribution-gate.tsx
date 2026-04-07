@@ -17,6 +17,7 @@ export default function ContributionGate({ children }: Props) {
   const router = useRouter();
   // null = still checking, true/false = resolved
   const [status, setStatus] = useState<AccessStatus | null>(null);
+  const [seasonalSkipped, setSeasonalSkipped] = useState(false);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -46,9 +47,18 @@ export default function ContributionGate({ children }: Props) {
     void fetchStatus();
   }, [user, authLoading, router]);
 
+  const handleSkipSeasonal = () => {
+    setSeasonalSkipped(true);
+  };
+
   // Always render children so page content (carousel animation etc.) mounts immediately.
   // Overlay the gate on top once we know the user doesn't have access.
-  const locked = status !== null && !status.has_access && !status.needs_onboarding;
+  // Seasonal gate can be skipped per-term; base quota gate cannot.
+  const locked =
+    status !== null &&
+    !status.has_access &&
+    !status.needs_onboarding &&
+    !(status.pending_seasonal_upload && seasonalSkipped);
 
   return (
     <div className="relative">
@@ -88,6 +98,16 @@ export default function ContributionGate({ children }: Props) {
             >
               {status?.pending_seasonal_upload ? `Upload ${status.due_term} Data` : "Upload Distribution"}
             </Link>
+
+            {status?.pending_seasonal_upload && (
+              <button
+                type="button"
+                onClick={handleSkipSeasonal}
+                className="mt-3 text-xs text-brand-navy/45 dark:text-white/40 underline hover:text-brand-navy dark:hover:text-white transition-colors"
+              >
+                Skip for now
+              </button>
+            )}
 
             <p className="mt-4 text-xs text-brand-navy/45 dark:text-white/40">
               Already uploaded?{" "}
