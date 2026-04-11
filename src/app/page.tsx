@@ -306,7 +306,11 @@ export default function Home() {
                     Built for Queen&apos;s Students
                   </span>
                 </div>
-                {studentCount !== null && (
+                {studentCount === null ? (
+                  <div className="inline-flex items-center rounded-full px-4 py-2 glass-pill">
+                    <div className="h-3 w-28 rounded-full bg-brand-navy/10 dark:bg-white/10 animate-pulse" />
+                  </div>
+                ) : (
                   <div
                     className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-brand-navy"
                     style={{
