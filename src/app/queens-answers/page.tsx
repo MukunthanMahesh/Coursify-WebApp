@@ -271,16 +271,7 @@ function AIFeatures() {
           <button
             type="button"
             onClick={() => setShowLimitPopup(true)}
-            className="flex items-center gap-2 mt-3 px-4 py-2 shrink-0 rounded-full
-              bg-white dark:bg-zinc-800
-              border border-brand-navy/12 dark:border-white/10
-              shadow-[0_2px_8px_rgba(0,48,95,0.08),0_1px_2px_rgba(0,48,95,0.04)]
-              dark:shadow-[0_2px_8px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.2)]
-              text-[12.5px] font-medium text-brand-navy/70 dark:text-white/65
-              hover:shadow-[0_4px_14px_rgba(0,48,95,0.12),0_1px_3px_rgba(0,48,95,0.06)]
-              dark:hover:shadow-[0_4px_14px_rgba(0,0,0,0.38),0_1px_3px_rgba(0,0,0,0.22)]
-              hover:text-brand-navy dark:hover:text-white
-              transition-all duration-200"
+            className="flex items-center gap-2 mt-3 px-4 py-2 shrink-0 rounded-full bg-white dark:bg-zinc-800 border border-brand-navy/12 dark:border-white/10 shadow-[0_2px_8px_rgba(0,48,95,0.08),0_1px_2px_rgba(0,48,95,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.2)] text-[12.5px] font-medium text-brand-navy/70 dark:text-white/65 hover:shadow-[0_4px_14px_rgba(0,48,95,0.12),0_1px_3px_rgba(0,48,95,0.06)] dark:hover:shadow-[0_4px_14px_rgba(0,0,0,0.38),0_1px_3px_rgba(0,0,0,0.22)] hover:text-brand-navy dark:hover:text-white transition-all duration-200"
           >
             <Info className="h-3.5 w-3.5 shrink-0 text-brand-navy/50 dark:text-white/45" />
             {limitHit === "global" ? (
