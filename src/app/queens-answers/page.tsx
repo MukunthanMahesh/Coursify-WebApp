@@ -27,18 +27,6 @@ function QueensAnswersSuspenseFallback() {
 
 type ChatMessage = { role: "user" | "bot"; text: string }
 
-// TODO: Remove artificial delay and replace with real API call when backend is ready.
-// The 1.5–2.5s random timeout is purely cosmetic to simulate a realistic response time.
-function mockSendMessage(_question: string): Promise<string> {
-  const delay = 1500 + Math.random() * 1000 // 1.5–2.5s
-  return new Promise((resolve) =>
-    setTimeout(() => {
-      resolve(
-        "The AI is almost ready — we're putting it through its paces before course selection. For now, head over to the course explorer and upload your grade distros to get a head start!"
-      )
-    }, delay)
-  )
-}
 
 function AIFeatures() {
   const [question, setQuestion] = useState("")
@@ -84,10 +72,10 @@ function AIFeatures() {
   }, [])
 
   const fetchStatus = useCallback(async () => {
-    const token = await getToken()
-    if (!token) return
     setStatusLoading(true)
     try {
+      const token = await getToken()
+      if (!token) return
       const res = await fetch("/api/queens-answers/status", {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -96,8 +84,8 @@ function AIFeatures() {
       setTierLimit(data.dailyLimit)
       setRemaining(data.remaining)
       setGlobalRemaining(data.globalRemaining)
-      if (data.remaining <= 0) setLimitHit("user")
-      if (data.globalRemaining <= 0) setLimitHit("global")
+      if (typeof data.remaining === "number" && data.remaining <= 0) setLimitHit("user")
+      if (typeof data.globalRemaining === "number" && data.globalRemaining <= 0) setLimitHit("global")
     } finally {
       setStatusLoading(false)
     }
@@ -231,14 +219,15 @@ function AIFeatures() {
     }
     if (!questionText.trim()) return
 
+    const token = await getToken()
+    if (!token) return
+
     const userMsg: ChatMessage = { role: "user", text: questionText.trim() }
     setMessages((prev) => [...prev, userMsg])
     setQuestion("")
     setIsBotTyping(true)
 
     try {
-      const token = await getToken()
-      if (!token) return
       const res = await fetch("/api/queens-answers/chat", {
         method: "POST",
         headers: {
@@ -389,75 +378,77 @@ function AIFeatures() {
 
         {/* Ask a Question Input at the bottom — prompt builder + composer pill */}
         <div
-          className={`fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 flex w-[min(100%-1rem,46rem)] sm:w-[min(100%-2rem,46rem)] max-w-3xl items-center gap-1.5 sm:gap-2 ${showHowItWorks ? "opacity-30 pointer-events-none blur-[1px]" : "opacity-100"}`}
+          className={`fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col w-[min(100%-1rem,46rem)] sm:w-[min(100%-2rem,46rem)] max-w-3xl items-center ${showHowItWorks ? "opacity-30 pointer-events-none blur-[1px]" : "opacity-100"}`}
           style={{ zIndex: 30 }}
         >
-          <PromptBuilderPanel
-            open={promptBuilderOpen}
-            onOpenChange={(next) => {
-              setPromptBuilderOpen(next)
-              if (next) setShowHowItWorks(false)
-            }}
-            onUsePrompt={(text) => setQuestion(text)}
-            questionInputRef={questionTextareaRef}
-            composerInert={showHowItWorks}
-            disabled={authLoading}
-          />
-          <div
-            className={`group/composer flex min-w-0 flex-1 items-end gap-1 box-border rounded-[2rem] pl-5 pr-1.5 py-1.5
-            [transition-property:background-color,border-color,box-shadow,opacity] duration-[420ms] ease-in-out
-            motion-reduce:transition-none
-            bg-[#fcfcfd] dark:bg-[#262626]
-            border border-brand-navy/20 dark:border-white/10
-            shadow-[0_2px_12px_rgba(0,48,95,0.07),0_1px_4px_rgba(0,48,95,0.045),inset_0_1px_0_rgba(255,255,255,0.92)]
-            dark:shadow-[0_2px_14px_rgba(0,0,0,0.28),0_1px_4px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.06)]
-            focus-within:border-brand-red/35
-            ${
-              showHowItWorks
-                ? ""
-                : "hover:border-brand-navy/28 dark:hover:border-white/[0.14] hover:shadow-[0_5px_20px_rgba(0,48,95,0.09),0_2px_6px_rgba(0,48,95,0.055),inset_0_1px_0_rgba(255,255,255,0.98)] dark:hover:shadow-[0_6px_22px_rgba(0,0,0,0.36),0_2px_8px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]"
-            }`}
-          >
-            <textarea
-              ref={questionTextareaRef}
-              rows={1}
-              className="min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent py-2.5 pl-0 pr-2 text-base sm:text-[17px] leading-normal text-[#222] shadow-none outline-none ring-0 ring-offset-0 focus:border-0 focus:shadow-none focus:outline-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:outline-none focus-visible:ring-0 dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
-              placeholder="Ask anything"
-              value={question}
-              readOnly={showHowItWorks || needsAuthToAsk || limitHit !== null}
-              onChange={(e) => setQuestion(e.target.value)}
-              onClick={openAuthModalForQuestion}
-              onFocus={(e) => {
-                if (needsAuthToAsk) {
-                  e.target.blur()
-                  setAuthModalOpen(true)
-                }
+          <div className="flex w-full items-center gap-1.5 sm:gap-2">
+            <PromptBuilderPanel
+              open={promptBuilderOpen}
+              onOpenChange={(next) => {
+                setPromptBuilderOpen(next)
+                if (next) setShowHowItWorks(false)
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                  e.preventDefault()
-                  if (question.trim()) handleSubmitQuestion()
-                }
-              }}
-              disabled={showHowItWorks || authLoading || limitHit !== null}
-              title="Enter for a new paragraph. Ctrl+Enter or Cmd+Enter to send."
-              aria-label="Your question for Queen's Answers"
+              onUsePrompt={(text) => setQuestion(text)}
+              questionInputRef={questionTextareaRef}
+              composerInert={showHowItWorks}
+              disabled={authLoading}
             />
-            <button
-              type="button"
-              onClick={() => handleSubmitQuestion()}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-md shadow-brand-red/25 transition-[transform,background-color,box-shadow,opacity] duration-200 ease-out hover:bg-[#c01f2e] hover:shadow-lg hover:shadow-brand-red/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red disabled:pointer-events-none disabled:opacity-35 motion-reduce:hover:scale-100 active:scale-[0.97] enabled:hover:scale-[1.04]"
-              aria-label="Send question"
-              disabled={showHowItWorks || authLoading || !question.trim() || limitHit !== null}
+            <div
+              className={`group/composer flex min-w-0 flex-1 items-end gap-1 box-border rounded-[2rem] pl-5 pr-1.5 py-1.5
+              [transition-property:background-color,border-color,box-shadow,opacity] duration-[420ms] ease-in-out
+              motion-reduce:transition-none
+              bg-[#fcfcfd] dark:bg-[#262626]
+              border border-brand-navy/20 dark:border-white/10
+              shadow-[0_2px_12px_rgba(0,48,95,0.07),0_1px_4px_rgba(0,48,95,0.045),inset_0_1px_0_rgba(255,255,255,0.92)]
+              dark:shadow-[0_2px_14px_rgba(0,0,0,0.28),0_1px_4px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.06)]
+              focus-within:border-brand-red/35
+              ${
+                showHowItWorks
+                  ? ""
+                  : "hover:border-brand-navy/28 dark:hover:border-white/[0.14] hover:shadow-[0_5px_20px_rgba(0,48,95,0.09),0_2px_6px_rgba(0,48,95,0.055),inset_0_1px_0_rgba(255,255,255,0.98)] dark:hover:shadow-[0_6px_22px_rgba(0,0,0,0.36),0_2px_8px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]"
+              }`}
             >
-              <ArrowUp
-                className="h-5 w-5"
-                strokeWidth={2.5}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
+              <textarea
+                ref={questionTextareaRef}
+                rows={1}
+                className="min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent py-2.5 pl-0 pr-2 text-base sm:text-[17px] leading-normal text-[#222] shadow-none outline-none ring-0 ring-offset-0 focus:border-0 focus:shadow-none focus:outline-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:outline-none focus-visible:ring-0 dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
+                placeholder="Ask anything"
+                value={question}
+                readOnly={showHowItWorks || needsAuthToAsk || limitHit !== null}
+                onChange={(e) => setQuestion(e.target.value)}
+                onClick={openAuthModalForQuestion}
+                onFocus={(e) => {
+                  if (needsAuthToAsk) {
+                    e.target.blur()
+                    setAuthModalOpen(true)
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault()
+                    if (question.trim()) handleSubmitQuestion()
+                  }
+                }}
+                disabled={showHowItWorks || authLoading || limitHit !== null}
+                title="Enter for a new paragraph. Ctrl+Enter or Cmd+Enter to send."
+                aria-label="Your question for Queen's Answers"
               />
-            </button>
+              <button
+                type="button"
+                onClick={() => handleSubmitQuestion()}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-md shadow-brand-red/25 transition-[transform,background-color,box-shadow,opacity] duration-200 ease-out hover:bg-[#c01f2e] hover:shadow-lg hover:shadow-brand-red/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red disabled:pointer-events-none disabled:opacity-35 motion-reduce:hover:scale-100 active:scale-[0.97] enabled:hover:scale-[1.04]"
+                aria-label="Send question"
+                disabled={showHowItWorks || authLoading || !question.trim() || limitHit !== null}
+              >
+                <ArrowUp
+                  className="h-5 w-5"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                />
+              </button>
+            </div>
           </div>
           {/* Stats line */}
           {user && !authLoading && !statusLoading && (
