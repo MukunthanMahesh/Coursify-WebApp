@@ -265,7 +265,25 @@ function AIFeatures() {
   return (
       <ContributionGate>
     <div className="h-screen overflow-hidden bg-[var(--page-bg)] pt-16 sm:pt-20">
-      <div className={`h-full flex flex-col items-center px-2 sm:px-4 overflow-hidden ${messages.length === 0 ? "justify-center -mt-10 sm:-mt-16" : ""}`}>
+      <div className="h-full flex flex-col items-center px-2 sm:px-4 overflow-hidden">
+        {/* Limit info bar — always visible at top when user is loaded */}
+        {user && !authLoading && !statusLoading && (remaining !== null || limitHit !== null) && (
+          <button
+            type="button"
+            onClick={() => setShowLimitPopup(true)}
+            className="flex items-center gap-1.5 text-[12px] text-brand-navy/50 dark:text-white/38 hover:text-brand-navy/70 dark:hover:text-white/58 transition-colors pt-3 pb-0 shrink-0"
+          >
+            <Info className="h-3.5 w-3.5 shrink-0" />
+            {limitHit === "global" ? (
+              <span>At capacity for today — tap for details</span>
+            ) : limitHit === "user" ? (
+              <span>Daily limit reached — tap for details</span>
+            ) : (
+              <span>{remaining} of {tierLimit} questions remaining today — tap for details</span>
+            )}
+          </button>
+        )}
+
         <AnimatePresence>
           {messages.length === 0 && (
             <motion.div
@@ -273,7 +291,7 @@ function AIFeatures() {
               initial={{ opacity: 1, y: 0 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-              className="w-full max-w-3xl flex flex-col items-center"
+              className="flex-1 w-full max-w-3xl flex flex-col items-center justify-center -mt-10 sm:-mt-16"
             >
               {/* Header */}
               <h1 className="text-3xl sm:text-5xl font-extrabold text-center mb-4 sm:mb-6 tracking-tight animated-title">
@@ -341,23 +359,6 @@ function AIFeatures() {
 
         {messages.length > 0 && (
           <>
-          {/* Limit info bar — top of chat */}
-          {user && !authLoading && !statusLoading && (remaining !== null || limitHit !== null) && (
-            <button
-              type="button"
-              onClick={() => setShowLimitPopup(true)}
-              className="w-full max-w-3xl mx-auto px-3 sm:px-4 pt-3 pb-0 flex items-center gap-1.5 text-[12px] text-brand-navy/50 dark:text-white/38 hover:text-brand-navy/70 dark:hover:text-white/58 transition-colors shrink-0"
-            >
-              <Info className="h-3.5 w-3.5 shrink-0" />
-              {limitHit === "global" ? (
-                <span>At capacity for today — tap for details</span>
-              ) : limitHit === "user" ? (
-                <span>Daily limit reached — tap for details</span>
-              ) : (
-                <span>{remaining} of {tierLimit} questions remaining today — tap for details</span>
-              )}
-            </button>
-          )}
           <div className="flex-1 w-full max-w-3xl mx-auto overflow-y-auto pb-28 sm:pb-32 pt-4 px-3 sm:px-4 space-y-3 sm:space-y-4">
             {messages.map((m, i) =>
               m.role === "user" ? (
