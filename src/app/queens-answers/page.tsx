@@ -251,7 +251,7 @@ function AIFeatures() {
 
       setMessages((prev) => [...prev, { role: "bot", text: data.answer }])
       setRemaining(data.remaining)
-      if (data.remaining <= 0) setLimitHit("user")
+      if (typeof data.remaining === "number" && data.remaining <= 0) setLimitHit("user")
     } finally {
       setIsBotTyping(false)
     }
