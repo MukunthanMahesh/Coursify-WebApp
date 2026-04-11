@@ -91,14 +91,14 @@ export async function POST(request: NextRequest) {
     question = typeof body.question === "string" ? body.question.trim() : ""
   } catch {
     return NextResponse.json(
-      { error: "Invalid request body", reason: "unauthorized" },
+      { error: "Invalid request body" },
       { status: 400 }
     )
   }
 
   if (!question) {
     return NextResponse.json(
-      { error: "Question is required", reason: "unauthorized" },
+      { error: "Question is required" },
       { status: 400 }
     )
   }
@@ -120,5 +120,5 @@ export async function POST(request: NextRequest) {
     await redis.expire(userKey, 86400)
   }
 
-  return NextResponse.json({ answer, remaining: tierLimit - (newUserCount ?? 1) })
+  return NextResponse.json({ answer, remaining: tierLimit - (newUserCount ?? 0) })
 }
