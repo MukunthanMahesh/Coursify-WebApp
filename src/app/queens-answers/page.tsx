@@ -5,9 +5,10 @@ import { createPortal } from "react-dom"
 import { motion, useAnimation, AnimatePresence } from "framer-motion"
 import { usePathname, useSearchParams } from "next/navigation"
 import { QUEENS_ANSWERS_DRAFT_STORAGE_KEY } from "@/constants/queens-answers"
-import { ArrowUp, Brain, Hammer, Search, MessageSquare, Target } from "lucide-react"
+import { ArrowUp, Brain, Hammer, Search, MessageSquare, Target, Info } from "lucide-react"
 import { useMotionTier } from "@/lib/motion-prefs"
 import { useAuth } from "@/lib/auth/auth-context"
+import { getSupabaseClient } from "@/lib/supabase/client"
 import { buildAuthHref } from "@/lib/auth/safe-redirect"
 import { AuthModal } from "@/components/auth-modal"
 import { PromptBuilderPanel } from "@/components/queens-answers/prompt-builder-panel"
@@ -46,6 +47,11 @@ function AIFeatures() {
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isBotTyping, setIsBotTyping] = useState(false)
+  const [remaining, setRemaining] = useState<number | null>(null)
+  const [tierLimit, setTierLimit] = useState<number | null>(null)
+  const [globalRemaining, setGlobalRemaining] = useState<number | null>(null)
+  const [limitHit, setLimitHit] = useState<"user" | "global" | null>(null)
+  const [statusLoading, setStatusLoading] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const questionTextareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesBottomRef = useRef<HTMLDivElement>(null)
@@ -71,6 +77,31 @@ function AIFeatures() {
   )
 
   const needsAuthToAsk = !authLoading && !user
+
+  const getToken = useCallback(async (): Promise<string | null> => {
+    const { data: session } = await getSupabaseClient().auth.getSession()
+    return session?.session?.access_token ?? null
+  }, [])
+
+  const fetchStatus = useCallback(async () => {
+    const token = await getToken()
+    if (!token) return
+    setStatusLoading(true)
+    try {
+      const res = await fetch("/api/queens-answers/status", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      setTierLimit(data.dailyLimit)
+      setRemaining(data.remaining)
+      setGlobalRemaining(data.globalRemaining)
+      if (data.remaining <= 0) setLimitHit("user")
+      if (data.globalRemaining <= 0) setLimitHit("global")
+    } finally {
+      setStatusLoading(false)
+    }
+  }, [getToken])
 
   const adjustQuestionTextareaHeight = useCallback(() => {
     const el = questionTextareaRef.current
@@ -105,6 +136,12 @@ function AIFeatures() {
       sessionStorage.removeItem(QUEENS_ANSWERS_DRAFT_STORAGE_KEY)
     }
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+    void fetchStatus()
+  }, [user, fetchStatus])
+
   const howItWorksItems = [
     {
       icon: Search,
@@ -200,8 +237,32 @@ function AIFeatures() {
     setIsBotTyping(true)
 
     try {
-      const reply = await mockSendMessage(questionText)
-      setMessages((prev) => [...prev, { role: "bot", text: reply }])
+      const token = await getToken()
+      if (!token) return
+      const res = await fetch("/api/queens-answers/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ question: questionText }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        if (data.reason === "rate_limit") {
+          setLimitHit("user")
+        } else if (data.reason === "capacity") {
+          setLimitHit("global")
+        }
+        setMessages((prev) => [...prev, { role: "bot", text: data.error ?? "Something went wrong." }])
+        return
+      }
+
+      setMessages((prev) => [...prev, { role: "bot", text: data.answer }])
+      setRemaining(data.remaining)
+      if (data.remaining <= 0) setLimitHit("user")
     } finally {
       setIsBotTyping(false)
     }
@@ -363,7 +424,7 @@ function AIFeatures() {
               className="min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent py-2.5 pl-0 pr-2 text-base sm:text-[17px] leading-normal text-[#222] shadow-none outline-none ring-0 ring-offset-0 focus:border-0 focus:shadow-none focus:outline-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:outline-none focus-visible:ring-0 dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
               placeholder="Ask anything"
               value={question}
-              readOnly={showHowItWorks || needsAuthToAsk}
+              readOnly={showHowItWorks || needsAuthToAsk || limitHit !== null}
               onChange={(e) => setQuestion(e.target.value)}
               onClick={openAuthModalForQuestion}
               onFocus={(e) => {
@@ -378,7 +439,7 @@ function AIFeatures() {
                   if (question.trim()) handleSubmitQuestion()
                 }
               }}
-              disabled={showHowItWorks || authLoading}
+              disabled={showHowItWorks || authLoading || limitHit !== null}
               title="Enter for a new paragraph. Ctrl+Enter or Cmd+Enter to send."
               aria-label="Your question for Queen's Answers"
             />
@@ -387,7 +448,7 @@ function AIFeatures() {
               onClick={() => handleSubmitQuestion()}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-md shadow-brand-red/25 transition-[transform,background-color,box-shadow,opacity] duration-200 ease-out hover:bg-[#c01f2e] hover:shadow-lg hover:shadow-brand-red/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red disabled:pointer-events-none disabled:opacity-35 motion-reduce:hover:scale-100 active:scale-[0.97] enabled:hover:scale-[1.04]"
               aria-label="Send question"
-              disabled={showHowItWorks || authLoading || !question.trim()}
+              disabled={showHowItWorks || authLoading || !question.trim() || limitHit !== null}
             >
               <ArrowUp
                 className="h-5 w-5"
@@ -398,6 +459,22 @@ function AIFeatures() {
               />
             </button>
           </div>
+          {/* Stats line */}
+          {user && !authLoading && !statusLoading && (
+            <div className="mt-1.5 text-center text-[11px] text-brand-navy/45 dark:text-white/35 select-none px-2">
+              {limitHit === "global" ? (
+                <span>Queen&apos;s Answers is at capacity for today. Check back tomorrow.</span>
+              ) : limitHit === "user" ? (
+                <span>You&apos;ve used your {tierLimit} daily questions. Resets within 24 hours.</span>
+              ) : remaining !== null && globalRemaining !== null ? (
+                <span>
+                  {remaining} of {tierLimit} questions remaining today
+                  &nbsp;·&nbsp;
+                  {globalRemaining.toLocaleString()} / 1,500 global remaining
+                </span>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
 
