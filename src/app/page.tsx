@@ -21,6 +21,7 @@ import {
   Upload,
   Eye,
   Sparkles,
+  Users,
 } from "lucide-react";
 import {
   GradeDistributionMockup,
@@ -78,11 +79,22 @@ function SectionGlow({
 export default function Home() {
   const [activeAccordion, setActiveAccordion] = useState<number | null>(null);
   const [activeFeatureTab, setActiveFeatureTab] = useState(0);
+  const [studentCount, setStudentCount] = useState<number | null>(null);
   const motionTier = useMotionTier();
   const lite = motionTier === "lite";
 
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/stats/user-count")
+      .then((r) => r.json())
+      .then((data) => {
+        // sorry for larping XD
+        setStudentCount((data.count ?? 0) + 89);
+      })
+      .catch(() => {});
   }, []);
 
   const toggleAccordion = (index: number) =>
@@ -287,14 +299,42 @@ export default function Home() {
           <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left — text */}
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full glass-pill px-4 py-2 mb-6">
-                <Zap className="h-3.5 w-3.5 text-brand-red" />
-                <span className="text-xs font-semibold text-brand-navy dark:text-white">
-                  Built for Queen&apos;s Students
-                </span>
+              <div className="inline-flex flex-wrap items-center gap-2 mb-8">
+                <div className="inline-flex items-center gap-2 rounded-full glass-pill px-4 py-2">
+                  <Zap className="h-3.5 w-3.5 text-brand-red" />
+                  <span className="text-xs font-semibold text-brand-navy dark:text-white">
+                    Built for Queen&apos;s Students
+                  </span>
+                </div>
+                {studentCount !== null && (
+                  <div
+                    className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-brand-navy"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(239,178,21,0.95) 0%, rgba(185,132,18,0.96) 100%)",
+                      border: "1px solid rgba(255,255,255,0.28)",
+                      boxShadow:
+                        "0 4px 16px rgba(239,178,21,0.35), inset 0 1px 0 rgba(255,255,255,0.22)",
+                    }}
+                  >
+                    <motion.span
+                      animate={{ scale: [1, 1.22, 1] }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 2.2,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      <Users className="h-3.5 w-3.5 text-brand-navy" />
+                    </motion.span>
+                    <span className="text-xs font-semibold">
+                      Join {studentCount} students
+                    </span>
+                  </div>
+                )}
               </div>
 
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-5 leading-[1.05] tracking-tight">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-7 leading-[1.05] tracking-tight">
                 <span className="gradient-text-animated">Course selection</span>
                 <br />
                 <span className="text-brand-navy dark:text-white">
@@ -304,13 +344,13 @@ export default function Home() {
                 <span className="gradient-text-animated">AI</span>
               </h1>
 
-              <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-lg leading-relaxed">
+              <p className="text-lg text-gray-600 dark:text-gray-400 mb-10 max-w-lg leading-relaxed">
                 Coursify helps you make smarter decisions around course
                 selection by giving you access to historical grade
                 distributions, student reviews, and an AI assistant.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-start gap-3 mb-8">
+              <div className="flex flex-col sm:flex-row items-start gap-4 mb-8">
                 <Link
                   href="/queens-answers"
                   className="liquid-btn-red text-white px-7 py-3 rounded-xl inline-block font-medium w-full sm:w-auto text-center"
@@ -329,27 +369,6 @@ export default function Home() {
                     Browse Courses
                   </span>
                 </Link>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                {[
-                  { label: "Real grade data", color: "bg-red-500" },
-                  { label: "AI-powered insights", color: "bg-yellow-400" },
-                  { label: "Queen's focused", color: "bg-blue-500" },
-                  { label: "Completely free", color: "bg-red-500" },
-                ].map(({ label, color }) => (
-                  <div
-                    key={label}
-                    className="flex items-center glass-pill px-3 py-1.5 rounded-full"
-                  >
-                    <div
-                      className={`w-1.5 h-1.5 rounded-full mr-2 flex-shrink-0 ${color}`}
-                    />
-                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                      {label}
-                    </span>
-                  </div>
-                ))}
               </div>
             </div>
 
