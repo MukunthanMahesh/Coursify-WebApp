@@ -277,7 +277,6 @@ export default function SettingsPage() {
             ) : (
               <span className="text-sm text-gray-400">Loading…</span>
             )}
-          </div>
         </div>
 
         {/* Section 2: Daily Question Limit */}
