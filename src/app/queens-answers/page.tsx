@@ -40,6 +40,7 @@ function AIFeatures() {
   const [globalRemaining, setGlobalRemaining] = useState<number | null>(null)
   const [limitHit, setLimitHit] = useState<"user" | "global" | null>(null)
   const [statusLoading, setStatusLoading] = useState(false)
+  const [showLimitPopup, setShowLimitPopup] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const questionTextareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesBottomRef = useRef<HTMLDivElement>(null)
@@ -339,6 +340,24 @@ function AIFeatures() {
         </AnimatePresence>
 
         {messages.length > 0 && (
+          <>
+          {/* Limit info bar — top of chat */}
+          {user && !authLoading && !statusLoading && (remaining !== null || limitHit !== null) && (
+            <button
+              type="button"
+              onClick={() => setShowLimitPopup(true)}
+              className="w-full max-w-3xl mx-auto px-3 sm:px-4 pt-3 pb-0 flex items-center gap-1.5 text-[12px] text-brand-navy/50 dark:text-white/38 hover:text-brand-navy/70 dark:hover:text-white/58 transition-colors shrink-0"
+            >
+              <Info className="h-3.5 w-3.5 shrink-0" />
+              {limitHit === "global" ? (
+                <span>At capacity for today — tap for details</span>
+              ) : limitHit === "user" ? (
+                <span>Daily limit reached — tap for details</span>
+              ) : (
+                <span>{remaining} of {tierLimit} questions remaining today — tap for details</span>
+              )}
+            </button>
+          )}
           <div className="flex-1 w-full max-w-3xl mx-auto overflow-y-auto pb-28 sm:pb-32 pt-4 px-3 sm:px-4 space-y-3 sm:space-y-4">
             {messages.map((m, i) =>
               m.role === "user" ? (
@@ -374,6 +393,7 @@ function AIFeatures() {
             )}
             <div ref={messagesBottomRef} />
           </div>
+          </>
         )}
 
         {/* Ask a Question Input at the bottom — prompt builder + composer pill */}
@@ -450,22 +470,16 @@ function AIFeatures() {
               </button>
             </div>
           </div>
-          {/* Stats line */}
-          {user && !authLoading && !statusLoading && (
-            <div className="mt-1.5 text-center text-[11px] text-brand-navy/45 dark:text-white/35 select-none px-2">
-              {limitHit === "global" ? (
-                <span>Queen&apos;s Answers is at capacity for today. Check back tomorrow.</span>
-              ) : limitHit === "user" ? (
-                <span>You&apos;ve used your {tierLimit} daily questions. Resets within 24 hours.</span>
-              ) : remaining !== null && globalRemaining !== null ? (
-                <span>
-                  {remaining} of {tierLimit} questions remaining today
-                  &nbsp;·&nbsp;
-                  {globalRemaining.toLocaleString()} / 1,500 global remaining
-                </span>
-              ) : null}
-            </div>
-          )}
+          {/* How it works link */}
+          <div className="mt-1.5 text-center">
+            <button
+              type="button"
+              onClick={() => { setPromptBuilderOpen(false); setShowHowItWorks(true) }}
+              className="text-[11px] text-brand-navy/45 dark:text-white/35 hover:text-brand-navy/65 dark:hover:text-white/55 transition-colors underline select-none"
+            >
+              Learn how Queen&apos;s Answers works
+            </button>
+          </div>
         </div>
       </div>
 
@@ -548,6 +562,92 @@ function AIFeatures() {
           document.body
         )}
 
+      {/* Limit info popup */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {showLimitPopup && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-20 sm:pt-24"
+                onClick={(e) => { if (e.target === e.currentTarget) setShowLimitPopup(false) }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="glass-modal-panel relative w-full max-w-sm rounded-2xl p-5"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    className="glass-modal-close absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full text-xl font-bold text-brand-navy/55 dark:text-white/55 hover:text-brand-red"
+                    onClick={() => setShowLimitPopup(false)}
+                    aria-label="Close"
+                  >
+                    &times;
+                  </button>
+                  <h3 className="text-base font-bold text-brand-navy dark:text-white mb-3">Your Usage Today</h3>
+                  <div className="space-y-2.5">
+                    {limitHit === "global" ? (
+                      <p className="text-sm text-brand-navy/70 dark:text-white/65">
+                        Queen&apos;s Answers is at capacity for today. Check back tomorrow.
+                      </p>
+                    ) : limitHit === "user" ? (
+                      <p className="text-sm text-brand-navy/70 dark:text-white/65">
+                        You&apos;ve used your {tierLimit} daily questions. Resets within 24 hours.
+                      </p>
+                    ) : (
+                      <>
+                        <div>
+                          <div className="flex justify-between text-xs text-brand-navy/55 dark:text-white/45 mb-1">
+                            <span>Your questions</span>
+                            <span>{remaining} of {tierLimit} remaining</span>
+                          </div>
+                          <div className="h-1.5 w-full rounded-full bg-brand-navy/10 dark:bg-white/10 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-brand-navy dark:bg-blue-400 transition-all"
+                              style={{ width: `${tierLimit && tierLimit > 0 ? Math.min(100, Math.round(((tierLimit - (remaining ?? 0)) / tierLimit) * 100)) : 0}%` }}
+                            />
+                          </div>
+                        </div>
+                        {globalRemaining !== null && (
+                          <div>
+                            <div className="flex justify-between text-xs text-brand-navy/55 dark:text-white/45 mb-1">
+                              <span>Global capacity</span>
+                              <span>{globalRemaining.toLocaleString()} / 1,500 remaining</span>
+                            </div>
+                            <div className="h-1.5 w-full rounded-full bg-brand-navy/10 dark:bg-white/10 overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-brand-navy/40 dark:bg-blue-400/40 transition-all"
+                                style={{ width: `${Math.min(100, Math.round(((1500 - globalRemaining) / 1500) * 100))}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    <div className="border-t border-brand-navy/10 dark:border-white/10 pt-2.5 mt-2.5">
+                      <p className="text-xs text-brand-navy/50 dark:text-white/40 leading-relaxed">
+                        0–1 semesters: <span className="font-medium text-brand-navy/70 dark:text-white/60">2 questions/day</span>
+                        &nbsp;·&nbsp;
+                        2+ semesters: <span className="font-medium text-brand-navy/70 dark:text-white/60">3 questions/day</span>
+                      </p>
+                      <p className="text-xs text-brand-navy/40 dark:text-white/30 leading-relaxed mt-1">
+                        Limits reset daily. Global capacity is shared across all users.
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
 
       {/* All styles in one place */}
       <style jsx>{`
