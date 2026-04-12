@@ -164,7 +164,7 @@ const Navigation = () => {
       style={{ transform: hidden ? "translateY(-110%)" : "translateY(0)" }}
     >
       <div
-        className="max-w-4xl mx-auto rounded-full px-5 py-2.5 motion-safe:transition-all motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.22_1_0.36_1)] border transition-all duration-300 shadow-md"
+        className="max-w-4xl mx-auto rounded-full px-5 py-2.5 motion-safe:transition-all motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.22_1_0.36_1)] border transition-all duration-300 shadow-md ring-1 ring-black/[0.06] dark:ring-white/[0.08]"
         style={{
           background: scrolled ? "var(--nav-bg-scrolled)" : "var(--nav-bg)",
           borderColor: scrolled ? "var(--nav-border)" : "transparent",
