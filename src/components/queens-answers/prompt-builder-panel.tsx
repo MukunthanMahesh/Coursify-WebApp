@@ -107,8 +107,8 @@ export function PromptBuilderPanel({
         aria-describedby={descId}
         side="top"
         align="start"
-        sideOffset={10}
-        collisionPadding={12}
+        sideOffset={14}
+        collisionPadding={8}
         onCloseAutoFocus={(e) => {
           e.preventDefault()
           if (closedViaUsePromptRef.current) {
@@ -122,8 +122,8 @@ export function PromptBuilderPanel({
           closeRef.current?.focus()
         }}
         className={cn(
-          "glass-modal-panel w-[min(calc(100vw-1rem),42rem)] max-w-[42rem] overflow-visible rounded-2xl border border-white/55 p-0 shadow-xl dark:border-white/12",
-          "flex flex-col gap-0 p-5 text-brand-navy dark:text-white"
+          "glass-modal-panel w-[min(calc(100vw-1rem),46rem)] sm:w-[min(calc(100vw-2rem),46rem)] overflow-hidden rounded-2xl border border-white/55 p-0 shadow-xl dark:border-white/12",
+          "flex flex-col max-h-[calc(100svh-8rem)] p-5 text-brand-navy dark:text-white"
         )}
       >
         <div className="relative shrink-0 pr-10">
@@ -144,7 +144,7 @@ export function PromptBuilderPanel({
           </p>
         </div>
 
-        <div className="mt-4 shrink-0 space-y-4">
+        <div className="mt-4 min-h-0 flex-1 overflow-y-auto space-y-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-navy/55 dark:text-white/55">
               Category

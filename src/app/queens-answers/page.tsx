@@ -269,7 +269,7 @@ function AIFeatures() {
         {/* Limit info pill — always visible at top when user is loaded */}
         {user && !authLoading && !statusLoading && (remaining !== null || limitHit !== null) && (
           <div
-            className="mt-3 px-4 py-3 shrink-0 rounded-2xl w-64 bg-white dark:bg-zinc-800 border border-brand-navy/10 dark:border-white/10 shadow-[0_2px_8px_rgba(0,48,95,0.08),0_1px_2px_rgba(0,48,95,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.2)]"
+            className="mt-6 sm:mt-3 px-4 py-3 shrink-0 rounded-2xl w-64 bg-white dark:bg-zinc-800 border border-brand-navy/10 dark:border-white/10 shadow-[0_2px_8px_rgba(0,48,95,0.08),0_1px_2px_rgba(0,48,95,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.2)]"
           >
             {/* Global row */}
             {globalRemaining !== null && (
@@ -311,10 +311,10 @@ function AIFeatures() {
               initial={{ opacity: 1, y: 0 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-              className="flex-1 w-full max-w-3xl flex flex-col items-center justify-center -mt-10 sm:-mt-16"
+              className="flex-1 w-full max-w-3xl flex flex-col items-center justify-start pt-16 sm:pt-24"
             >
               {/* Header */}
-              <h1 className="text-3xl sm:text-5xl font-extrabold text-center mb-4 sm:mb-6 tracking-tight animated-title">
+              <h1 className="text-3xl sm:text-5xl font-extrabold text-center mb-4 sm:mb-12 tracking-tight animated-title">
                 <span className="gradient-text">Queen's Answers</span>
               </h1>
 

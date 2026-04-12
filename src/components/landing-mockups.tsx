@@ -99,7 +99,9 @@ export function GradeDistributionMockup({
       <div className="mt-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div>
-            <div className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}>
+            <div
+              className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}
+            >
               Avg GPA
             </div>
             <div
@@ -109,7 +111,9 @@ export function GradeDistributionMockup({
             </div>
           </div>
           <div>
-            <div className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}>
+            <div
+              className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}
+            >
               Enrollment
             </div>
             <div
@@ -270,7 +274,6 @@ export function StudentReviewsMockup({
           </span>
         </div>
       </div>
-
     </div>
   );
 }
@@ -296,7 +299,9 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
   const inputPad = compact ? "py-0.5" : "py-1.5";
 
   return (
-    <div className={`glass-card rounded-2xl ${pad} w-full h-full flex flex-col select-none`}>
+    <div
+      className={`glass-card rounded-2xl ${pad} w-full h-full flex flex-col select-none`}
+    >
       <div className="flex items-center gap-2 mb-3">
         <div
           className={`gradient-text font-bold ${compact ? "text-xs" : "text-sm"}`}
@@ -304,9 +309,7 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
           Queen&apos;s Answers
         </div>
         <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse ml-auto" />
-        <span
-          className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}
-        >
+        <span className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}>
           Online
         </span>
       </div>
@@ -329,9 +332,7 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
         <div
           className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full bg-brand-red flex items-center justify-center flex-shrink-0`}
         >
-          <Brain
-            className={`${compact ? "h-3 w-3" : "h-4 w-4"} text-white`}
-          />
+          <Brain className={`${compact ? "h-3 w-3" : "h-4 w-4"} text-white`} />
         </div>
         <div
           className={`bg-white/60 dark:bg-white/[0.06] border border-white/80 dark:border-white/[0.08] rounded-2xl rounded-tl-sm ${compact ? "px-3 py-2" : "px-4 py-3"} flex-1`}
