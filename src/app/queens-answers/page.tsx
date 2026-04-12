@@ -273,14 +273,26 @@ function AIFeatures() {
             onClick={() => setShowLimitPopup(true)}
             className="flex items-center gap-2 mt-3 px-4 py-2 shrink-0 rounded-full bg-white dark:bg-zinc-800 border border-brand-navy/12 dark:border-white/10 shadow-[0_2px_8px_rgba(0,48,95,0.08),0_1px_2px_rgba(0,48,95,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.2)] text-[12.5px] font-medium text-brand-navy/70 dark:text-white/65 hover:shadow-[0_4px_14px_rgba(0,48,95,0.12),0_1px_3px_rgba(0,48,95,0.06)] dark:hover:shadow-[0_4px_14px_rgba(0,0,0,0.38),0_1px_3px_rgba(0,0,0,0.22)] hover:text-brand-navy dark:hover:text-white transition-all duration-200"
           >
-            <Info className="h-3.5 w-3.5 shrink-0 text-brand-navy/50 dark:text-white/45" />
-            {limitHit === "global" ? (
-              <span>Queen&apos;s Answers is at capacity today — tap for details</span>
-            ) : limitHit === "user" ? (
-              <span>Daily limit reached — tap for details</span>
-            ) : (
-              <span>{remaining} of {tierLimit} questions remaining today — tap for details</span>
-            )}
+            <Info className="h-3.5 w-3.5 shrink-0 text-brand-navy/40 dark:text-white/35" />
+            <span className="flex items-center gap-3">
+              {globalRemaining !== null && (
+                <span>
+                  <span className="text-brand-navy/45 dark:text-white/35">Global </span>
+                  <span className="font-semibold text-brand-navy dark:text-white">{(1500 - globalRemaining).toLocaleString()}</span>
+                  <span className="text-brand-navy/45 dark:text-white/35"> / 1,500 used</span>
+                </span>
+              )}
+              {globalRemaining !== null && remaining !== null && (
+                <span className="text-brand-navy/25 dark:text-white/20">·</span>
+              )}
+              {remaining !== null && tierLimit !== null && (
+                <span>
+                  <span className="text-brand-navy/45 dark:text-white/35">Mine </span>
+                  <span className="font-semibold text-brand-navy dark:text-white">{tierLimit - remaining}</span>
+                  <span className="text-brand-navy/45 dark:text-white/35"> / {tierLimit} used</span>
+                </span>
+              )}
+            </span>
           </button>
         )}
 
