@@ -558,14 +558,14 @@ export default function QueensCourses() {
           <div className="flex-1">
             <div className="search-glass">
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-brand-navy/10 dark:bg-blue-400/10">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-brand-navy/10 dark:bg-blue-400/10">
                   <Search className="h-3.5 w-3.5 text-brand-navy dark:text-white" />
                 </div>
                 <Input
                   placeholder="Search by course code or name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 bg-transparent border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none text-brand-navy dark:text-white placeholder:text-brand-navy/40 dark:placeholder:text-white/40"
+                  className="pl-14 bg-transparent border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none text-brand-navy dark:text-white placeholder:text-brand-navy/40 dark:placeholder:text-white/40"
                 />
               </div>
             </div>
@@ -1220,14 +1220,14 @@ export default function QueensCourses() {
               >
                 <div className="flex-1 search-glass">
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-md bg-brand-navy/10 dark:bg-blue-400/10">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-md bg-brand-navy/10 dark:bg-blue-400/10">
                       <Search className="h-3 w-3 text-brand-navy dark:text-white" />
                     </div>
                     <Input
                       placeholder="Search all courses..."
                       value={catalogSearch}
                       onChange={(e) => setCatalogSearch(e.target.value)}
-                      className="pl-10 bg-transparent border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none text-brand-navy dark:text-white placeholder:text-brand-navy/40 dark:placeholder:text-white/40 text-sm"
+                      className="pl-12 bg-transparent border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none text-brand-navy dark:text-white placeholder:text-brand-navy/40 dark:placeholder:text-white/40 text-sm"
                     />
                   </div>
                 </div>
