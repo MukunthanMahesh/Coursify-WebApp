@@ -4,7 +4,7 @@ import type { RefObject } from "react"
 import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { Hammer, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
   PROMPT_BUILDER_CATEGORIES,
   PROMPT_BUILDER_DEFAULT_CATEGORY_ID,
@@ -38,6 +38,7 @@ export function PromptBuilderPanel({
   const closeRef = useRef<HTMLButtonElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const closedViaUsePromptRef = useRef(false)
+  const [anchorElement, setAnchorElement] = useState<Element | null>(null)
 
   const [categoryId, setCategoryId] = useState(PROMPT_BUILDER_DEFAULT_CATEGORY_ID)
   const [optionId, setOptionId] = useState<string | null>(null)
@@ -63,6 +64,24 @@ export function PromptBuilderPanel({
     setOptionDetailText("")
   }, [optionId])
 
+  useEffect(() => {
+    setAnchorElement(
+      questionInputRef?.current?.parentElement ?? questionInputRef?.current ?? triggerRef.current
+    )
+  }, [open, questionInputRef])
+
+  const composerVirtualRef = useMemo(
+    () => ({
+      current: anchorElement
+        ? {
+            getBoundingClientRect: () => anchorElement.getBoundingClientRect(),
+            contextElement: anchorElement,
+          }
+        : null,
+    }),
+    [anchorElement]
+  )
+
   const previewText = composePromptPreview(
     categoryId,
     optionId,
@@ -81,6 +100,7 @@ export function PromptBuilderPanel({
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverAnchor virtualRef={composerVirtualRef} />
       <PopoverTrigger asChild>
         <button
           ref={triggerRef}
@@ -106,9 +126,9 @@ export function PromptBuilderPanel({
         aria-labelledby={titleId}
         aria-describedby={descId}
         side="top"
-        align="start"
-        sideOffset={14}
-        collisionPadding={8}
+        align="center"
+        sideOffset={10}
+        collisionPadding={12}
         onCloseAutoFocus={(e) => {
           e.preventDefault()
           if (closedViaUsePromptRef.current) {
@@ -122,9 +142,13 @@ export function PromptBuilderPanel({
           closeRef.current?.focus()
         }}
         className={cn(
-          "glass-modal-panel w-[min(calc(100vw-1rem),46rem)] sm:w-[min(calc(100vw-2rem),46rem)] overflow-hidden rounded-2xl border border-white/55 p-0 shadow-xl dark:border-white/12",
-          "flex flex-col max-h-[calc(100svh-8rem)] p-5 text-brand-navy dark:text-white"
+          "glass-modal-panel w-[min(calc(100vw-1rem),42rem)] max-w-[42rem] max-h-[calc(100dvh-1.5rem)] min-h-0 overflow-hidden rounded-2xl border border-white/55 p-0 shadow-xl dark:border-white/12",
+          "flex flex-col gap-0 p-5 text-brand-navy dark:text-white"
         )}
+        style={{
+          maxHeight:
+            "min(calc(100dvh - 1.5rem), var(--radix-popover-content-available-height))",
+        }}
       >
         <div className="relative shrink-0 pr-10">
           <button
@@ -144,7 +168,7 @@ export function PromptBuilderPanel({
           </p>
         </div>
 
-        <div className="mt-4 min-h-0 flex-1 overflow-y-auto space-y-4">
+        <div className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pr-1">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-navy/55 dark:text-white/55">
               Category
