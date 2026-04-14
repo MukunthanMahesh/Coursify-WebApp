@@ -11,7 +11,7 @@ The Prompt Builder helps students compose clearer questions for the Queen's Answ
 - **Categories:** Wrapped chips (no horizontal scroll) — Grades and difficulty, Prerequisites and eligibility, Professor quality, Course reviews, Compare courses.
 - **Primary follow-up:** A short question plus a **two-column grid** (on `sm+`) of selectable cards (label + snippet). One primary selection; changing category clears primary and refinement.
 - **Refinement (dynamic):** Below the primary block, each category shows an extra question and **wrapped pill chips** (optional). Choosing a category updates this block (`key={category.id}`). Refinements tweak the composed prompt when they carry snippet text; “No extra context” adds nothing.
-- **Preview:** Multiline read-only preview, **no internal scroll** — panel is wider (`max` ~42rem) and grows with content.
+- **Preview:** Multiline read-only preview with natural wrapping. The preview itself does **not** create a nested scroll area, but the panel body can scroll if the full builder would otherwise exceed the viewport.
 - **Use prompt:** Inserts the **flattened** prompt into the main question field and closes the popover. Focus moves to the question input (via `onCloseAutoFocus` + ref).
 
 ## Interaction with the rest of the page
