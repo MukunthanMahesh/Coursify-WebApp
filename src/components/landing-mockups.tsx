@@ -99,7 +99,9 @@ export function GradeDistributionMockup({
       <div className="mt-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div>
-            <div className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}>
+            <div
+              className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}
+            >
               Avg GPA
             </div>
             <div
@@ -109,7 +111,9 @@ export function GradeDistributionMockup({
             </div>
           </div>
           <div>
-            <div className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}>
+            <div
+              className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}
+            >
               Enrollment
             </div>
             <div
@@ -188,18 +192,6 @@ export function StudentReviewsMockup({
             </div>
             <div className={`${textXs} text-gray-400`}>2 months ago</div>
           </div>
-          <div className="ml-auto flex items-center gap-1.5">
-            <span
-              className={`${textXs} font-medium px-2 py-0.5 rounded-full bg-green-100/80 dark:bg-green-900/40 text-green-700 dark:text-green-300 border border-green-200/60 dark:border-green-700/40`}
-            >
-              Positive
-            </span>
-            <span
-              className={`${textXs} px-2 py-0.5 rounded-full font-medium bg-[#FF4500]/10 text-[#FF4500] border border-[#FF4500]/20`}
-            >
-              Reddit
-            </span>
-          </div>
         </div>
         <p
           className={`${textSm} text-gray-700 dark:text-gray-300 leading-relaxed`}
@@ -261,18 +253,6 @@ export function StudentReviewsMockup({
               ))}
             </div>
           </div>
-          <div className="ml-auto flex items-center gap-1.5">
-            <span
-              className={`${textXs} font-medium px-2 py-0.5 rounded-full bg-green-100/80 dark:bg-green-900/40 text-green-700 dark:text-green-300 border border-green-200/60 dark:border-green-700/40`}
-            >
-              Positive
-            </span>
-            <span
-              className={`${textXs} px-2 py-0.5 rounded-full font-medium bg-brand-navy/10 dark:bg-brand-navy-light/20 text-brand-navy dark:text-white border border-brand-navy/20 dark:border-brand-navy-light/30`}
-            >
-              RateMyProfessors
-            </span>
-          </div>
         </div>
         <p
           className={`${textSm} text-gray-700 dark:text-gray-300 leading-relaxed`}
@@ -319,7 +299,9 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
   const inputPad = compact ? "py-0.5" : "py-1.5";
 
   return (
-    <div className={`glass-card rounded-2xl ${pad} w-full select-none`}>
+    <div
+      className={`glass-card rounded-2xl ${pad} w-full h-full flex flex-col select-none`}
+    >
       <div className="flex items-center gap-2 mb-3">
         <div
           className={`gradient-text font-bold ${compact ? "text-xs" : "text-sm"}`}
@@ -327,9 +309,7 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
           Queen&apos;s Answers
         </div>
         <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse ml-auto" />
-        <span
-          className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}
-        >
+        <span className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}>
           Online
         </span>
       </div>
@@ -352,9 +332,7 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
         <div
           className={`${compact ? "w-6 h-6" : "w-8 h-8"} rounded-full bg-brand-red flex items-center justify-center flex-shrink-0`}
         >
-          <Brain
-            className={`${compact ? "h-3 w-3" : "h-4 w-4"} text-white`}
-          />
+          <Brain className={`${compact ? "h-3 w-3" : "h-4 w-4"} text-white`} />
         </div>
         <div
           className={`bg-white/60 dark:bg-white/[0.06] border border-white/80 dark:border-white/[0.08] rounded-2xl rounded-tl-sm ${compact ? "px-3 py-2" : "px-4 py-3"} flex-1`}
@@ -370,28 +348,12 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
             </span>
             . Students say Prof. Li is &ldquo;clear and organized.&rdquo;
           </p>
-          {!compact && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {[
-                "CISC 204 · 3.62 GPA",
-                "CISC 235 · 3.31 GPA",
-                "CISC 223 · 3.18 GPA",
-              ].map((t) => (
-                <span
-                  key={t}
-                  className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-brand-red/8 text-brand-red border border-brand-red/15 sm:text-xs"
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
       {/* Input bar */}
       <div
-        className={`flex items-center gap-1.5 rounded-[1.35rem] border border-white/70 bg-white/65 shadow-[0_1px_3px_rgba(0,48,95,0.06)] backdrop-blur-sm transition-[box-shadow,border-color] focus-within:border-brand-red/35 focus-within:ring-2 focus-within:ring-brand-red/15 dark:border-white/[0.1] dark:bg-white/[0.06] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)] dark:focus-within:ring-brand-red/25 ${
+        className={`mt-auto flex items-center gap-1.5 rounded-[1.35rem] border border-white/70 bg-white/65 shadow-[0_1px_3px_rgba(0,48,95,0.06)] backdrop-blur-sm transition-[box-shadow,border-color] focus-within:border-brand-red/35 focus-within:ring-2 focus-within:ring-brand-red/15 dark:border-white/[0.1] dark:bg-white/[0.06] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)] dark:focus-within:ring-brand-red/25 ${
           compact ? "px-2.5 py-1" : "px-3 py-1.5"
         }`}
       >

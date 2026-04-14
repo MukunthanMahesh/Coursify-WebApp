@@ -5,9 +5,10 @@ import { createPortal } from "react-dom"
 import { motion, useAnimation, AnimatePresence } from "framer-motion"
 import { usePathname, useSearchParams } from "next/navigation"
 import { QUEENS_ANSWERS_DRAFT_STORAGE_KEY } from "@/constants/queens-answers"
-import { ArrowUp, Brain, Hammer, Search, MessageSquare, Target } from "lucide-react"
+import { ArrowUp, Brain, Hammer, Search, MessageSquare, Target, TriangleAlert } from "lucide-react"
 import { useMotionTier } from "@/lib/motion-prefs"
 import { useAuth } from "@/lib/auth/auth-context"
+import { getSupabaseClient } from "@/lib/supabase/client"
 import { buildAuthHref } from "@/lib/auth/safe-redirect"
 import { AuthModal } from "@/components/auth-modal"
 import { PromptBuilderPanel } from "@/components/queens-answers/prompt-builder-panel"
@@ -26,18 +27,6 @@ function QueensAnswersSuspenseFallback() {
 
 type ChatMessage = { role: "user" | "bot"; text: string }
 
-// TODO: Remove artificial delay and replace with real API call when backend is ready.
-// The 1.5–2.5s random timeout is purely cosmetic to simulate a realistic response time.
-function mockSendMessage(_question: string): Promise<string> {
-  const delay = 1500 + Math.random() * 1000 // 1.5–2.5s
-  return new Promise((resolve) =>
-    setTimeout(() => {
-      resolve(
-        "The AI is almost ready — we're putting it through its paces before course selection. For now, head over to the course explorer and upload your grade distros to get a head start!"
-      )
-    }, delay)
-  )
-}
 
 function AIFeatures() {
   const [question, setQuestion] = useState("")
@@ -46,6 +35,10 @@ function AIFeatures() {
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isBotTyping, setIsBotTyping] = useState(false)
+  const [remaining, setRemaining] = useState<number | null>(null)
+  const [tierLimit, setTierLimit] = useState<number | null>(null)
+  const [limitHit, setLimitHit] = useState<"user" | null>(null)
+  const [statusLoading, setStatusLoading] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const questionTextareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesBottomRef = useRef<HTMLDivElement>(null)
@@ -71,6 +64,29 @@ function AIFeatures() {
   )
 
   const needsAuthToAsk = !authLoading && !user
+
+  const getToken = useCallback(async (): Promise<string | null> => {
+    const { data: session } = await getSupabaseClient().auth.getSession()
+    return session?.session?.access_token ?? null
+  }, [])
+
+  const fetchStatus = useCallback(async () => {
+    setStatusLoading(true)
+    try {
+      const token = await getToken()
+      if (!token) return
+      const res = await fetch("/api/queens-answers/status", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      setTierLimit(data.dailyLimit)
+      setRemaining(data.remaining)
+      if (typeof data.remaining === "number" && data.remaining <= 0) setLimitHit("user")
+    } finally {
+      setStatusLoading(false)
+    }
+  }, [getToken])
 
   const adjustQuestionTextareaHeight = useCallback(() => {
     const el = questionTextareaRef.current
@@ -105,6 +121,12 @@ function AIFeatures() {
       sessionStorage.removeItem(QUEENS_ANSWERS_DRAFT_STORAGE_KEY)
     }
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+    void fetchStatus()
+  }, [user, fetchStatus])
+
   const howItWorksItems = [
     {
       icon: Search,
@@ -194,14 +216,37 @@ function AIFeatures() {
     }
     if (!questionText.trim()) return
 
+    const token = await getToken()
+    if (!token) return
+
     const userMsg: ChatMessage = { role: "user", text: questionText.trim() }
     setMessages((prev) => [...prev, userMsg])
     setQuestion("")
     setIsBotTyping(true)
 
     try {
-      const reply = await mockSendMessage(questionText)
-      setMessages((prev) => [...prev, { role: "bot", text: reply }])
+      const res = await fetch("/api/queens-answers/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ question: questionText }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        if (data.reason === "rate_limit") {
+          setLimitHit("user")
+        }
+        setMessages((prev) => [...prev, { role: "bot", text: data.error ?? "Something went wrong." }])
+        return
+      }
+
+      setMessages((prev) => [...prev, { role: "bot", text: data.answer }])
+      setRemaining(data.remaining)
+      if (typeof data.remaining === "number" && data.remaining <= 0) setLimitHit("user")
     } finally {
       setIsBotTyping(false)
     }
@@ -214,7 +259,30 @@ function AIFeatures() {
   return (
       <ContributionGate>
     <div className="h-screen overflow-hidden bg-[var(--page-bg)] pt-16 sm:pt-20">
-      <div className={`h-full flex flex-col items-center px-2 sm:px-4 overflow-hidden ${messages.length === 0 ? "justify-center -mt-10 sm:-mt-16" : ""}`}>
+      <div className="h-full flex flex-col items-center px-2 sm:px-4 overflow-hidden">
+        {/* Limit info pill — always visible at top when user is loaded */}
+        {user && !authLoading && !statusLoading && (remaining !== null || limitHit !== null) && (
+          <div
+            className="mt-6 sm:mt-3 px-4 py-3 shrink-0 rounded-2xl w-64 bg-white dark:bg-zinc-800 border border-brand-navy/10 dark:border-white/10 shadow-[0_2px_8px_rgba(0,48,95,0.08),0_1px_2px_rgba(0,48,95,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.2)]"
+          >
+            {/* Personal row */}
+            {remaining !== null && tierLimit !== null && (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-medium text-brand-navy/55 dark:text-white/45">Your Questions Remaining</span>
+                  <span className="text-[11px] font-semibold text-brand-navy dark:text-white">{remaining} / {tierLimit}</span>
+                </div>
+                <div className="h-1.5 w-full rounded-full bg-brand-navy/10 dark:bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-[#efb215] transition-all"
+                    style={{ width: `${tierLimit > 0 ? Math.min(100, Math.round((remaining / tierLimit) * 100)) : 0}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <AnimatePresence>
           {messages.length === 0 && (
             <motion.div
@@ -222,10 +290,10 @@ function AIFeatures() {
               initial={{ opacity: 1, y: 0 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-              className="w-full max-w-3xl flex flex-col items-center"
+              className="flex-1 w-full max-w-3xl flex flex-col items-center justify-start pt-16 sm:pt-24"
             >
               {/* Header */}
-              <h1 className="text-3xl sm:text-5xl font-extrabold text-center mb-4 sm:mb-6 tracking-tight animated-title">
+              <h1 className="text-3xl sm:text-5xl font-extrabold text-center mb-4 sm:mb-12 tracking-tight animated-title">
                 <span className="gradient-text">Queen's Answers</span>
               </h1>
 
@@ -289,6 +357,7 @@ function AIFeatures() {
         </AnimatePresence>
 
         {messages.length > 0 && (
+          <>
           <div className="flex-1 w-full max-w-3xl mx-auto overflow-y-auto pb-28 sm:pb-32 pt-4 px-3 sm:px-4 space-y-3 sm:space-y-4">
             {messages.map((m, i) =>
               m.role === "user" ? (
@@ -324,78 +393,97 @@ function AIFeatures() {
             )}
             <div ref={messagesBottomRef} />
           </div>
+          </>
         )}
 
         {/* Ask a Question Input at the bottom — prompt builder + composer pill */}
         <div
-          className={`fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 flex w-[min(100%-1rem,46rem)] sm:w-[min(100%-2rem,46rem)] max-w-3xl items-center gap-1.5 sm:gap-2 ${showHowItWorks ? "opacity-30 pointer-events-none blur-[1px]" : "opacity-100"}`}
+          className={`fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col w-[min(100%-1rem,46rem)] sm:w-[min(100%-2rem,46rem)] max-w-3xl items-center ${showHowItWorks ? "opacity-30 pointer-events-none blur-[1px]" : "opacity-100"}`}
           style={{ zIndex: 30 }}
         >
-          <PromptBuilderPanel
-            open={promptBuilderOpen}
-            onOpenChange={(next) => {
-              setPromptBuilderOpen(next)
-              if (next) setShowHowItWorks(false)
-            }}
-            onUsePrompt={(text) => setQuestion(text)}
-            questionInputRef={questionTextareaRef}
-            composerInert={showHowItWorks}
-            disabled={authLoading}
-          />
-          <div
-            className={`group/composer flex min-w-0 flex-1 items-end gap-1 box-border rounded-[2rem] pl-5 pr-1.5 py-1.5
-            [transition-property:background-color,border-color,box-shadow,opacity] duration-[420ms] ease-in-out
-            motion-reduce:transition-none
-            bg-[#fcfcfd] dark:bg-[#262626]
-            border border-brand-navy/20 dark:border-white/10
-            shadow-[0_2px_12px_rgba(0,48,95,0.07),0_1px_4px_rgba(0,48,95,0.045),inset_0_1px_0_rgba(255,255,255,0.92)]
-            dark:shadow-[0_2px_14px_rgba(0,0,0,0.28),0_1px_4px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.06)]
-            focus-within:border-brand-red/35
-            ${
-              showHowItWorks
-                ? ""
-                : "hover:border-brand-navy/28 dark:hover:border-white/[0.14] hover:shadow-[0_5px_20px_rgba(0,48,95,0.09),0_2px_6px_rgba(0,48,95,0.055),inset_0_1px_0_rgba(255,255,255,0.98)] dark:hover:shadow-[0_6px_22px_rgba(0,0,0,0.36),0_2px_8px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]"
-            }`}
-          >
-            <textarea
-              ref={questionTextareaRef}
-              rows={1}
-              className="min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent py-2.5 pl-0 pr-2 text-base sm:text-[17px] leading-normal text-[#222] shadow-none outline-none ring-0 ring-offset-0 focus:border-0 focus:shadow-none focus:outline-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:outline-none focus-visible:ring-0 dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
-              placeholder="Ask anything"
-              value={question}
-              readOnly={showHowItWorks || needsAuthToAsk}
-              onChange={(e) => setQuestion(e.target.value)}
-              onClick={openAuthModalForQuestion}
-              onFocus={(e) => {
-                if (needsAuthToAsk) {
-                  e.target.blur()
-                  setAuthModalOpen(true)
-                }
+          {limitHit === "user" && (
+            <div className="w-full mb-2 px-4 py-3 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-sm font-medium shadow-md flex items-center gap-2.5">
+              <TriangleAlert className="h-4 w-4 shrink-0 text-amber-500 dark:text-amber-400" strokeWidth={2} />
+              You&apos;ve used all your questions for today. Check back in 24 hours.
+            </div>
+          )}
+          <div className="flex w-full items-center gap-1.5 sm:gap-2">
+            <PromptBuilderPanel
+              open={promptBuilderOpen}
+              onOpenChange={(next) => {
+                setPromptBuilderOpen(next)
+                if (next) setShowHowItWorks(false)
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                  e.preventDefault()
-                  if (question.trim()) handleSubmitQuestion()
-                }
-              }}
-              disabled={showHowItWorks || authLoading}
-              title="Enter for a new paragraph. Ctrl+Enter or Cmd+Enter to send."
-              aria-label="Your question for Queen's Answers"
+              onUsePrompt={(text) => setQuestion(text)}
+              questionInputRef={questionTextareaRef}
+              composerInert={showHowItWorks}
+              disabled={authLoading}
             />
+            <div
+              className={`group/composer flex min-w-0 flex-1 items-end gap-1 box-border rounded-[2rem] pl-5 pr-1.5 py-1.5
+              [transition-property:background-color,border-color,box-shadow,opacity] duration-[420ms] ease-in-out
+              motion-reduce:transition-none
+              bg-[#fcfcfd] dark:bg-[#262626]
+              border border-brand-navy/20 dark:border-white/10
+              shadow-[0_2px_12px_rgba(0,48,95,0.07),0_1px_4px_rgba(0,48,95,0.045),inset_0_1px_0_rgba(255,255,255,0.92)]
+              dark:shadow-[0_2px_14px_rgba(0,0,0,0.28),0_1px_4px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.06)]
+              focus-within:border-brand-red/35
+              ${
+                showHowItWorks
+                  ? ""
+                  : "hover:border-brand-navy/28 dark:hover:border-white/[0.14] hover:shadow-[0_5px_20px_rgba(0,48,95,0.09),0_2px_6px_rgba(0,48,95,0.055),inset_0_1px_0_rgba(255,255,255,0.98)] dark:hover:shadow-[0_6px_22px_rgba(0,0,0,0.36),0_2px_8px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]"
+              }`}
+            >
+              <textarea
+                ref={questionTextareaRef}
+                rows={1}
+                className="min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent py-2.5 pl-0 pr-2 text-base sm:text-[17px] leading-normal text-[#222] shadow-none outline-none ring-0 ring-offset-0 focus:border-0 focus:shadow-none focus:outline-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:outline-none focus-visible:ring-0 dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
+                placeholder="Ask anything"
+                value={question}
+                readOnly={showHowItWorks || needsAuthToAsk || limitHit !== null}
+                onChange={(e) => setQuestion(e.target.value)}
+                onClick={openAuthModalForQuestion}
+                onFocus={(e) => {
+                  if (needsAuthToAsk) {
+                    e.target.blur()
+                    setAuthModalOpen(true)
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault()
+                    if (question.trim()) handleSubmitQuestion()
+                  }
+                }}
+                disabled={showHowItWorks || authLoading || limitHit !== null}
+                title="Enter for a new paragraph. Ctrl+Enter or Cmd+Enter to send."
+                aria-label="Your question for Queen's Answers"
+              />
+              <button
+                type="button"
+                onClick={() => handleSubmitQuestion()}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-md shadow-brand-red/25 transition-[transform,background-color,box-shadow,opacity] duration-200 ease-out hover:bg-[#c01f2e] hover:shadow-lg hover:shadow-brand-red/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red disabled:pointer-events-none disabled:opacity-35 motion-reduce:hover:scale-100 active:scale-[0.97] enabled:hover:scale-[1.04]"
+                aria-label="Send question"
+                disabled={showHowItWorks || authLoading || !question.trim() || limitHit !== null}
+              >
+                <ArrowUp
+                  className="h-5 w-5"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                />
+              </button>
+            </div>
+          </div>
+          {/* How it works link */}
+          <div className="mt-1.5 text-center">
             <button
               type="button"
-              onClick={() => handleSubmitQuestion()}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-md shadow-brand-red/25 transition-[transform,background-color,box-shadow,opacity] duration-200 ease-out hover:bg-[#c01f2e] hover:shadow-lg hover:shadow-brand-red/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red disabled:pointer-events-none disabled:opacity-35 motion-reduce:hover:scale-100 active:scale-[0.97] enabled:hover:scale-[1.04]"
-              aria-label="Send question"
-              disabled={showHowItWorks || authLoading || !question.trim()}
+              onClick={() => { setPromptBuilderOpen(false); setShowHowItWorks(true) }}
+              className="text-[11px] text-brand-navy/45 dark:text-white/35 hover:text-brand-navy/65 dark:hover:text-white/55 transition-colors underline select-none"
             >
-              <ArrowUp
-                className="h-5 w-5"
-                strokeWidth={2.5}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              />
+              Learn how Queen&apos;s Answers works
             </button>
           </div>
         </div>
@@ -461,6 +549,16 @@ function AIFeatures() {
                       )
                     })}
                   </ul>
+                  <div className="mt-4 border-t border-brand-navy/10 dark:border-white/10 pt-4">
+                    <div className="text-xs font-semibold text-brand-navy/55 dark:text-white/50 uppercase tracking-wider mb-2">
+                      Daily Limits
+                    </div>
+                    <ul className="space-y-1 text-xs text-brand-navy/70 dark:text-white/60 leading-relaxed">
+                      <li>0–1 semesters completed: <span className="font-semibold text-brand-navy dark:text-white">2 questions/day</span></li>
+                      <li>2–4 semesters completed: <span className="font-semibold text-brand-navy dark:text-white">3 questions/day</span></li>
+                      <li>5+ semesters completed: <span className="font-semibold text-brand-navy dark:text-white">4 questions/day</span></li>
+                    </ul>
+                  </div>
                 </motion.div>
               </motion.div>
             )}
