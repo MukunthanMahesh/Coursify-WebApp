@@ -290,7 +290,7 @@ function AIFeatures() {
               initial={{ opacity: 1, y: 0 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-              className="flex-1 w-full max-w-3xl flex flex-col items-center justify-start pt-16 sm:pt-24"
+              className="flex-1 w-full max-w-3xl flex flex-col items-center justify-center pb-24 sm:pb-28"
             >
               {/* Header */}
               <h1 className="text-3xl sm:text-5xl font-extrabold text-center mb-4 sm:mb-12 tracking-tight animated-title">
