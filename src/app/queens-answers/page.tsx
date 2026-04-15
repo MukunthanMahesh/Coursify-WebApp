@@ -407,6 +407,21 @@ function AIFeatures() {
               You&apos;ve used all your questions for today. Check back in 24 hours.
             </div>
           )}
+          <AnimatePresence>
+            {question.length > 500 && (
+              <motion.div
+                key="char-limit-warning"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                className="w-full mb-2 px-4 py-3 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-300 dark:border-red-700 text-red-900 dark:text-red-200 text-sm font-medium shadow-md flex items-center gap-2.5"
+              >
+                <TriangleAlert className="h-4 w-4 shrink-0 text-red-500 dark:text-red-400" strokeWidth={2} />
+                Your question is too long — please shorten it to 500 characters or fewer ({question.length - 500} over).
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="flex w-full items-center">
             <div
               className={`group/composer flex min-w-0 flex-1 items-end gap-1 box-border rounded-[2rem] pl-1.5 pr-1.5 py-1.5
@@ -417,6 +432,7 @@ function AIFeatures() {
               shadow-[0_2px_12px_rgba(0,48,95,0.07),0_1px_4px_rgba(0,48,95,0.045),inset_0_1px_0_rgba(255,255,255,0.92)]
               dark:shadow-[0_2px_14px_rgba(0,0,0,0.28),0_1px_4px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.06)]
               focus-within:border-brand-red/35
+              ${question.length > 500 ? "!border-red-400 dark:!border-red-500" : ""}
               ${
                 showHowItWorks
                   ? ""
@@ -434,37 +450,46 @@ function AIFeatures() {
                 composerInert={showHowItWorks}
                 disabled={authLoading}
               />
-              <textarea
-                ref={questionTextareaRef}
-                rows={1}
-                className="min-h-[44px] min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent py-2.5 pl-2 pr-2 text-base sm:text-[17px] leading-normal text-[#222] shadow-none outline-none ring-0 ring-offset-0 focus:border-0 focus:shadow-none focus:outline-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:outline-none focus-visible:ring-0 dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
-                placeholder="Ask anything"
-                value={question}
-                readOnly={showHowItWorks || needsAuthToAsk || limitHit !== null}
-                onChange={(e) => setQuestion(e.target.value)}
-                onClick={openAuthModalForQuestion}
-                onFocus={(e) => {
-                  if (needsAuthToAsk) {
-                    e.target.blur()
-                    setAuthModalOpen(true)
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                    e.preventDefault()
-                    if (question.trim()) handleSubmitQuestion()
-                  }
-                }}
-                disabled={showHowItWorks || authLoading || limitHit !== null}
-                title="Enter for a new paragraph. Ctrl+Enter or Cmd+Enter to send."
-                aria-label="Your question for Queen's Answers"
-              />
+              <div className="min-w-0 flex-1 flex flex-col">
+                <textarea
+                  ref={questionTextareaRef}
+                  rows={1}
+                  className="min-h-[44px] min-w-0 w-full resize-none overflow-y-auto border-0 bg-transparent py-2.5 pl-2 pr-2 text-base sm:text-[17px] leading-normal text-[#222] shadow-none outline-none ring-0 ring-offset-0 focus:border-0 focus:shadow-none focus:outline-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:outline-none focus-visible:ring-0 dark:text-gray-100 placeholder:text-[#8e9196] dark:placeholder:text-gray-500 placeholder:font-normal transition-colors duration-[420ms] ease-in-out motion-reduce:transition-none"
+                  placeholder="Ask anything"
+                  value={question}
+                  readOnly={showHowItWorks || needsAuthToAsk || limitHit !== null}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  onClick={openAuthModalForQuestion}
+                  onFocus={(e) => {
+                    if (needsAuthToAsk) {
+                      e.target.blur()
+                      setAuthModalOpen(true)
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                      e.preventDefault()
+                      if (question.trim() && question.length <= 500) handleSubmitQuestion()
+                    }
+                  }}
+                  disabled={showHowItWorks || authLoading || limitHit !== null}
+                  title="Enter for a new paragraph. Ctrl+Enter or Cmd+Enter to send."
+                  aria-label="Your question for Queen's Answers"
+                />
+                {question.length > 400 && (
+                  <div className="flex justify-end pb-1 pr-1">
+                    <span className={`text-[11px] font-medium tabular-nums transition-colors ${question.length > 500 ? "text-red-500 dark:text-red-400" : "text-brand-navy/40 dark:text-white/35"}`}>
+                      {question.length}/500
+                    </span>
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => handleSubmitQuestion()}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-md shadow-brand-red/25 transition-[transform,background-color,box-shadow,opacity] duration-200 ease-out hover:bg-[#c01f2e] hover:shadow-lg hover:shadow-brand-red/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red disabled:pointer-events-none disabled:opacity-35 motion-reduce:hover:scale-100 active:scale-[0.97] enabled:hover:scale-[1.04]"
                 aria-label="Send question"
-                disabled={showHowItWorks || authLoading || !question.trim() || limitHit !== null}
+                disabled={showHowItWorks || authLoading || !question.trim() || question.length > 500 || limitHit !== null}
               >
                 <ArrowUp
                   className="h-5 w-5"
