@@ -1081,15 +1081,13 @@ export default function QueensCourses() {
                         courses.map((course) => (
                           <tr
                             key={course.id}
-                            className="border-t hover:bg-brand-navy/5 dark:hover:bg-blue-400/5 transition-colors duration-200"
+                            className="border-t hover:bg-brand-navy/5 dark:hover:bg-blue-400/5 transition-colors duration-200 cursor-pointer"
+                            onClick={() => router.push(`/schools/queens/${course.course_code.replace(/\s+/g, "-").toLowerCase()}`)}
                           >
                             <td className="px-4 py-3 text-sm font-medium">
-                              <a
-                                href={`/schools/queens/${course.course_code.replace(/\s+/g, "-").toLowerCase()}`}
-                                className="text-brand-red hover:underline dark:text-brand-navy-light dark:hover:text-white"
-                              >
+                              <span className="text-brand-red dark:text-brand-navy-light">
                                 {course.course_code}
-                              </a>
+                              </span>
                             </td>
                             <td className="px-4 py-3 text-sm">
                               {course.course_name}
