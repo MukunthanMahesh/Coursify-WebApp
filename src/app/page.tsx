@@ -5,7 +5,6 @@ import {
   Brain,
   BarChart,
   Info,
-  Star,
   Zap,
   Award,
   UserPlus,
@@ -21,7 +20,6 @@ import {
 import { StudentCountBadge } from "@/components/landing/StudentCountBadge";
 import { FeatureTabs } from "@/components/landing/FeatureTabs";
 import { FaqAccordion } from "@/components/landing/FaqAccordion";
-import { BRAND_NAVY_LIGHT } from "@/constants/brand";
 
 function SectionGlow({
   className,
@@ -72,33 +70,6 @@ const steps = [
   },
 ];
 
-const testimonials = [
-  {
-    quote:
-      "The AI assistant recommended a professor whose teaching style matched how I learn. Best course experience I've had at Queen's!",
-    name: "Queen's Engineering Student",
-    program: "Class of 2024",
-    initial: "E",
-    color: "#d62839",
-  },
-  {
-    quote:
-      "The AI chatbot gave me insights about my professor's teaching style that I couldn't find anywhere else.",
-    name: "Queen's Arts Student",
-    program: "Class of 2026",
-    initial: "A",
-    color: "#00305f",
-    darkColor: BRAND_NAVY_LIGHT,
-  },
-  {
-    quote:
-      "Being able to see how course difficulty changed over different semesters helped me pick the best time to take COMM 151.",
-    name: "Queen's Science Student",
-    program: "Class of 2025",
-    initial: "S",
-    color: "#efb215",
-  },
-];
 
 export default function Home() {
   return (
@@ -288,74 +259,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════ TESTIMONIALS ═══════════════ */}
-      <section className="section-glass py-12 sm:py-16 px-4 relative overflow-hidden">
-        <SectionGlow
-          className="left-[-3rem] top-16 h-80 w-80 blur-[145px] opacity-75"
-          gradient="radial-gradient(circle, rgba(214,40,57,0.14) 0%, rgba(214,40,57,0.05) 42%, transparent 74%)"
-        />
-        <SectionGlow
-          className="right-[-2rem] top-28 h-80 w-80 blur-[145px] opacity-70"
-          gradient="radial-gradient(circle, rgba(0,48,95,0.15) 0%, rgba(0,48,95,0.05) 46%, transparent 76%)"
-        />
-
-        <div className="container mx-auto relative z-10">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center gap-2 rounded-full glass-pill px-4 py-2 mb-3">
-              <Star className="h-3.5 w-3.5 text-brand-navy dark:text-white" />
-              <span className="text-brand-navy dark:text-white text-xs font-semibold">
-                Testimonials
-              </span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold mb-2 text-brand-navy dark:text-white">
-              Trusted by{" "}
-              <span className="gradient-text">Queen&apos;s students</span>
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              See how Coursify has helped students make better academic
-              decisions.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {testimonials.map((t, i) => (
-              <div
-                key={i}
-                className="glass-card glass-shine rounded-2xl p-6 sm:p-7 relative overflow-hidden group"
-                style={
-                  {
-                    "--ti-accent": t.color,
-                    "--ti-accent-dark": t.darkColor ?? t.color,
-                  } as CSSProperties
-                }
-              >
-                <div className="absolute top-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-t-2xl bg-[color:var(--ti-accent)] dark:bg-[color:var(--ti-accent-dark)]" />
-                <div className="flex items-center gap-1 text-brand-gold mb-5">
-                  {[...Array(5)].map((_, j) => (
-                    <Star key={j} className="h-4 w-4 fill-current" />
-                  ))}
-                </div>
-                <blockquote className="text-brand-navy/90 dark:text-slate-200 leading-relaxed mb-6">
-                  &ldquo;{t.quote}&rdquo;
-                </blockquote>
-                <div className="flex items-center gap-3 pt-5 border-t border-white/40 dark:border-white/[0.06]">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white bg-[color:var(--ti-accent)] dark:bg-[color:var(--ti-accent-dark)]">
-                    {t.initial}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-brand-navy dark:text-white">
-                      {t.name}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {t.program}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ═══════════════ FAQ ═══════════════ */}
       <section className="section-glass py-12 sm:py-16 px-4 relative overflow-hidden [overflow-anchor:none]">
@@ -409,49 +312,20 @@ export default function Home() {
               </span>
             </h2>
             <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-7">
-              Join thousands of Queen&apos;s students who are using Coursify to
+              Join Queen&apos;s students who are using Coursify to
               plan their academic journey.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-7">
-              <Link
-                href="/queens-answers"
-                className="liquid-btn-red text-white px-7 py-3 rounded-xl inline-block font-medium w-full sm:w-auto text-center"
-              >
-                <span className="relative z-10 flex items-center justify-center">
-                  <Brain className="mr-2 h-5 w-5" />
-                  Try AI Assistant
-                </span>
-              </Link>
-              <Link
-                href="/schools/queens"
-                className="liquid-btn-blue text-white px-7 py-3 rounded-xl inline-block font-medium w-full sm:w-auto text-center"
-              >
-                <span className="relative z-10 flex items-center justify-center">
-                  <BarChart className="mr-2 h-5 w-5" />
-                  Browse Courses
-                </span>
-              </Link>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2.5">
-              {[
-                { label: "Real grade distributions", color: "bg-red-500" },
-                { label: "AI-powered insights", color: "bg-yellow-400" },
-                { label: "Queen's focused", color: "bg-blue-500" },
-                { label: "Completely free", color: "bg-red-500" },
-              ].map(({ label, color }) => (
-                <div
-                  key={label}
-                  className="flex items-center glass-pill px-3 py-1.5 rounded-full"
-                >
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full mr-2 flex-shrink-0 ${color}`}
-                  />
-                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                    {label}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <Link
+              href="/sign-up"
+              className="inline-block px-8 py-3 rounded-xl font-semibold text-brand-navy text-sm sm:text-base w-full sm:w-auto text-center"
+              style={{
+                background: "linear-gradient(135deg, rgba(239,178,21,0.95) 0%, rgba(185,132,18,0.96) 100%)",
+                border: "1px solid rgba(255,255,255,0.28)",
+                boxShadow: "0 4px 20px rgba(239,178,21,0.4), inset 0 1px 0 rgba(255,255,255,0.22)",
+              }}
+            >
+              Sign Up — It&apos;s Free
+            </Link>
           </div>
         </div>
       </section>
