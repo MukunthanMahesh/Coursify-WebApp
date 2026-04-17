@@ -1,10 +1,5 @@
-"use client";
-
-import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { ArrowUp, Brain } from "lucide-react";
-import { QUEENS_ANSWERS_DRAFT_STORAGE_KEY } from "@/constants/queens-answers";
+import { Brain, ArrowUp } from "lucide-react";
 
 const GRADE_COLORS: Record<string, string> = {
   "A+": "#4CAF50",
@@ -283,18 +278,8 @@ export function StudentReviewsMockup({
    ───────────────────────────────────────────── */
 
 export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
-  const router = useRouter();
-  const [draft, setDraft] = useState("");
   const pad = compact ? "p-3" : "p-6";
   const textSm = compact ? "text-[10px]" : "text-sm";
-
-  const goToQueensAnswers = () => {
-    const q = draft.trim();
-    if (q) sessionStorage.setItem(QUEENS_ANSWERS_DRAFT_STORAGE_KEY, q);
-    else sessionStorage.removeItem(QUEENS_ANSWERS_DRAFT_STORAGE_KEY);
-    router.push("/queens-answers");
-  };
-
   const inputText = compact ? "text-[9px]" : "text-xs";
   const inputPad = compact ? "py-0.5" : "py-1.5";
 
@@ -308,7 +293,7 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
         >
           Queen&apos;s Answers
         </div>
-        <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse ml-auto" />
+        <div className="h-1.5 w-1.5 rounded-full bg-green-400 ml-auto" />
         <span className={`${compact ? "text-[9px]" : "text-xs"} text-gray-400`}>
           Online
         </span>
@@ -351,31 +336,19 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
         </div>
       </div>
 
-      {/* Input bar */}
+      {/* Static input bar */}
       <div
-        className={`mt-auto flex items-center gap-1.5 rounded-[1.35rem] border border-white/70 bg-white/65 shadow-[0_1px_3px_rgba(0,48,95,0.06)] backdrop-blur-sm transition-[box-shadow,border-color] focus-within:border-brand-red/35 focus-within:ring-2 focus-within:ring-brand-red/15 dark:border-white/[0.1] dark:bg-white/[0.06] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)] dark:focus-within:ring-brand-red/25 ${
+        className={`mt-auto flex items-center gap-1.5 rounded-[1.35rem] border border-white/70 bg-white/65 shadow-[0_1px_3px_rgba(0,48,95,0.06)] backdrop-blur-sm dark:border-white/[0.1] dark:bg-white/[0.06] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)] ${
           compact ? "px-2.5 py-1" : "px-3 py-1.5"
         }`}
       >
-        <input
-          type="text"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              goToQueensAnswers();
-            }
-          }}
-          placeholder="Ask about any course or professor…"
-          aria-label="Ask about any course or professor"
-          className={`min-h-0 min-w-0 flex-1 bg-transparent py-1 outline-none select-text placeholder:text-gray-400 text-brand-navy dark:text-white ${inputText} ${inputPad}`}
-        />
-        <button
-          type="button"
-          onClick={goToQueensAnswers}
-          aria-label="Go to Queen's Answers"
-          className={`flex shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-sm shadow-brand-red/25 transition-[transform,background-color,box-shadow] hover:bg-[#c01f2e] hover:shadow-md hover:shadow-brand-red/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red active:scale-[0.96] ${
+        <span
+          className={`min-w-0 flex-1 py-1 text-gray-400 ${inputText} ${inputPad}`}
+        >
+          Ask about any course or professor…
+        </span>
+        <div
+          className={`flex shrink-0 items-center justify-center rounded-full bg-brand-red text-white shadow-sm shadow-brand-red/25 ${
             compact ? "h-7 w-7" : "h-9 w-9"
           }`}
         >
@@ -386,7 +359,7 @@ export function AIAssistantMockup({ compact = false }: { compact?: boolean }) {
             strokeLinejoin="round"
             aria-hidden
           />
-        </button>
+        </div>
       </div>
     </div>
   );

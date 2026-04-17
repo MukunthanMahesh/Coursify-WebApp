@@ -12,14 +12,10 @@ import {
   Eye,
   Sparkles,
 } from "lucide-react";
-import {
-  GradeDistributionMockup,
-  StudentReviewsMockup,
-  AIAssistantMockup,
-} from "@/components/landing-mockups";
 import { StudentCountBadge } from "@/components/landing/StudentCountBadge";
 import { FeatureTabs } from "@/components/landing/FeatureTabs";
 import { PageFaq } from "@/components/landing/Faq";
+import HeroMockupsLoader from "@/components/landing/HeroMockupsLoader";
 
 function SectionGlow({
   className,
@@ -76,7 +72,7 @@ export default function Home() {
     <div className="relative overflow-hidden">
 
       {/* ═══════════════ HERO ═══════════════ */}
-      <section className="relative min-h-screen overflow-x-hidden pt-24 sm:pt-28 pb-12 sm:pb-16">
+      <section className="relative min-h-screen overflow-x-hidden pt-24 sm:pt-28 pb-6 sm:pb-10">
         <SectionGlow
           className="left-[6%] top-28 h-72 w-72 blur-[145px] opacity-90"
           gradient="radial-gradient(circle, rgba(0,48,95,0.18) 0%, rgba(0,48,95,0.07) 48%, transparent 76%)"
@@ -142,20 +138,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right — structured UI mockup cards */}
-            <div className="relative hidden lg:flex flex-col gap-4 subpixel-antialiased [transform:translateZ(0)]">
-              <div className="w-full">
-                <GradeDistributionMockup />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="h-full">
-                  <StudentReviewsMockup />
-                </div>
-                <div className="h-full">
-                  <AIAssistantMockup />
-                </div>
-              </div>
-            </div>
+            {/* Right — structured UI mockup cards (desktop only, lazy loaded) */}
+            <HeroMockupsLoader />
           </div>
         </div>
       </section>
