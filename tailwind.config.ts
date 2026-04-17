@@ -28,7 +28,7 @@ const config: Config = {
       },
       screens: {
         'lg-filters': '1060px',
-        'nav': '850px',
+        'nav': '884px',
       },
       colors: {
         "brand-navy": "#00305f",

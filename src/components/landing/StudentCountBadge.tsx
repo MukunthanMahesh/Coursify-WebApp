@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { Users } from "lucide-react";
 
 export function StudentCountBadge() {
@@ -36,12 +35,9 @@ export function StudentCountBadge() {
           "0 4px 16px rgba(239,178,21,0.35), inset 0 1px 0 rgba(255,255,255,0.22)",
       }}
     >
-      <motion.span
-        animate={{ scale: [1, 1.22, 1] }}
-        transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
-      >
+      <span>
         <Users className="h-3.5 w-3.5 text-brand-navy" />
-      </motion.span>
+      </span>
       <span className="text-xs font-semibold">Join {studentCount} students</span>
     </div>
   );

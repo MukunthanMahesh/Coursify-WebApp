@@ -12,14 +12,10 @@ import {
   Eye,
   Sparkles,
 } from "lucide-react";
-import {
-  GradeDistributionMockup,
-  StudentReviewsMockup,
-  AIAssistantMockup,
-} from "@/components/landing-mockups";
 import { StudentCountBadge } from "@/components/landing/StudentCountBadge";
 import { FeatureTabs } from "@/components/landing/FeatureTabs";
-import { FaqAccordion } from "@/components/landing/FaqAccordion";
+import { PageFaq } from "@/components/landing/Faq";
+import HeroMockupsLoader from "@/components/landing/HeroMockupsLoader";
 
 function SectionGlow({
   className,
@@ -76,7 +72,7 @@ export default function Home() {
     <div className="relative overflow-hidden">
 
       {/* ═══════════════ HERO ═══════════════ */}
-      <section className="relative min-h-screen overflow-x-hidden pt-24 sm:pt-28 pb-12 sm:pb-16">
+      <section className="relative min-h-screen overflow-x-hidden pt-24 sm:pt-28 pb-6 sm:pb-10">
         <SectionGlow
           className="left-[6%] top-28 h-72 w-72 blur-[145px] opacity-90"
           gradient="radial-gradient(circle, rgba(0,48,95,0.18) 0%, rgba(0,48,95,0.07) 48%, transparent 76%)"
@@ -142,20 +138,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right — structured UI mockup cards */}
-            <div className="relative hidden lg:flex flex-col gap-4 subpixel-antialiased [transform:translateZ(0)]">
-              <div className="w-full">
-                <GradeDistributionMockup />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="h-full">
-                  <StudentReviewsMockup />
-                </div>
-                <div className="h-full">
-                  <AIAssistantMockup />
-                </div>
-              </div>
-            </div>
+            {/* Right — structured UI mockup cards (desktop only, lazy loaded) */}
+            <HeroMockupsLoader />
           </div>
         </div>
       </section>
@@ -193,13 +177,13 @@ export default function Home() {
             {steps.map((step) => (
               <div
                 key={step.num}
-                className="glass-card group rounded-2xl p-6 relative overflow-hidden"
+                className="static-glass-card rounded-2xl p-6 relative overflow-hidden"
               >
                 <span className="absolute top-3 right-4 text-6xl font-black opacity-[0.04] text-brand-navy dark:text-white select-none">
                   {step.num}
                 </span>
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg text-[color:var(--step-fg)] dark:text-[color:var(--step-fg-dark)] bg-[color:var(--step-icon-bg)] dark:bg-[color:var(--step-icon-bg-dark)]"
+                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 text-[color:var(--step-fg)] dark:text-[color:var(--step-fg-dark)] bg-[color:var(--step-icon-bg)] dark:bg-[color:var(--step-icon-bg-dark)]"
                   style={
                     {
                       "--step-fg": step.color,
@@ -226,15 +210,6 @@ export default function Home() {
 
       {/* ═══════════════ TABBED FEATURES ═══════════════ */}
       <section className="section-glass py-12 sm:py-16 relative overflow-hidden">
-        <SectionGlow
-          className="-left-20 top-14 h-72 w-72 blur-[140px] opacity-80"
-          gradient="radial-gradient(circle, rgba(214,40,57,0.14) 0%, rgba(214,40,57,0.05) 44%, transparent 74%)"
-        />
-        <SectionGlow
-          className="right-[-4rem] top-24 h-80 w-80 blur-[150px] opacity-80"
-          gradient="radial-gradient(circle, rgba(0,48,95,0.16) 0%, rgba(0,48,95,0.05) 48%, transparent 76%)"
-        />
-
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center gap-2 rounded-full glass-pill px-4 py-2 mb-3">
@@ -245,9 +220,8 @@ export default function Home() {
             </div>
             <h2 className="text-xl sm:text-2xl font-bold mb-2">
               <span className="text-brand-navy dark:text-white">
-                Built for{" "}
+                Built for smarter decisions
               </span>
-              <span className="gradient-text">smarter decisions</span>
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Everything you need to research, compare, and choose the best
@@ -262,15 +236,6 @@ export default function Home() {
 
       {/* ═══════════════ FAQ ═══════════════ */}
       <section className="section-glass py-12 sm:py-16 px-4 relative overflow-hidden [overflow-anchor:none]">
-        <SectionGlow
-          className="left-1/2 top-8 h-72 w-72 -translate-x-1/2 blur-[145px] opacity-80"
-          gradient="radial-gradient(circle, rgba(214,40,57,0.12) 0%, rgba(214,40,57,0.04) 44%, transparent 76%)"
-        />
-        <SectionGlow
-          className="right-[-2rem] bottom-10 h-72 w-72 blur-[140px] opacity-70"
-          gradient="radial-gradient(circle, rgba(0,48,95,0.12) 0%, rgba(0,48,95,0.04) 46%, transparent 76%)"
-        />
-
         <div className="container max-w-4xl mx-auto relative z-10">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-full glass-pill mb-3">
@@ -280,14 +245,14 @@ export default function Home() {
               <Info className="h-3 w-3 text-brand-red" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold mb-2 text-brand-navy dark:text-white">
-              Your questions, <span className="gradient-text">answered</span>
+              Your questions, answered
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Get quick answers to the most common questions about Coursify.
             </p>
           </div>
 
-          <FaqAccordion />
+          <PageFaq />
         </div>
       </section>
 
@@ -317,12 +282,7 @@ export default function Home() {
             </p>
             <Link
               href="/sign-up"
-              className="inline-block px-8 py-3 rounded-xl font-semibold text-brand-navy text-sm sm:text-base w-full sm:w-auto text-center"
-              style={{
-                background: "linear-gradient(135deg, rgba(239,178,21,0.95) 0%, rgba(185,132,18,0.96) 100%)",
-                border: "1px solid rgba(255,255,255,0.28)",
-                boxShadow: "0 4px 20px rgba(239,178,21,0.4), inset 0 1px 0 rgba(255,255,255,0.22)",
-              }}
+              className="liquid-btn-gold inline-block px-8 py-3 rounded-xl font-semibold text-brand-navy text-sm sm:text-base w-full sm:w-auto text-center"
             >
               Sign Up — It&apos;s Free
             </Link>
