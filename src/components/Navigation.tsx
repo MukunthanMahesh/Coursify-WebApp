@@ -154,6 +154,7 @@ const Navigation = () => {
     { href: "/schools/queens", label: "View Courses" },
     { href: "/add-courses", label: "Upload Distributions" },
     { href: "/queens-answers", label: "AI Assistant" },
+    { href: "/bug-report", label: "Bug Report" },
     { href: "/about", label: "About" },
   ]
 
