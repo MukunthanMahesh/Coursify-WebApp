@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { getSafeRedirectPath } from "@/lib/auth/safe-redirect";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const next = requestUrl.searchParams.get("next") ?? "/onboarding";
+  const next = getSafeRedirectPath(requestUrl.searchParams.get("next"), "/onboarding");
 
   if (code) {
     // Build a response we can mutate to attach Set-Cookie headers
