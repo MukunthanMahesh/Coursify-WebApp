@@ -68,9 +68,11 @@ async function getOrFetchComments(courseCode: string): Promise<CachedPayload> {
 
   if (redditResult.error) {
     console.error("Error fetching reddit comments:", redditResult.error)
+    throw new Error(`Failed to fetch reddit comments: ${redditResult.error.message}`)
   }
   if (rmpResult.error) {
     console.error("Error fetching RMP comments:", rmpResult.error)
+    throw new Error(`Failed to fetch RMP comments: ${rmpResult.error.message}`)
   }
 
   const redditComments = (redditResult.data || []).map((row: Record<string, unknown>) => ({
@@ -120,7 +122,8 @@ export async function GET(
 
     // ── Preview mode: return a small slice of each source (1 API call for carousel) ──
     if (mode === "preview") {
-      const previewLimit = Math.max(1, Math.min(20, parseInt(searchParams.get("limit") || "5", 10)))
+      const parsedPreviewLimit = parseInt(searchParams.get("limit") || "5", 10)
+      const previewLimit = isNaN(parsedPreviewLimit) ? 5 : Math.max(1, Math.min(20, parsedPreviewLimit))
       return NextResponse.json({
         redditComments: redditComments.slice(0, previewLimit),
         rmpComments: rmpComments.slice(0, previewLimit),
@@ -131,8 +134,11 @@ export async function GET(
 
     // ── Paginated mode: single-source pagination for the detail page ──
     const source = (searchParams.get("source") || "all") as "reddit" | "rmp" | "all"
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10))
-    const limit = Math.max(1, Math.min(100, parseInt(searchParams.get("limit") || "20", 10)))
+    const parsedPage = parseInt(searchParams.get("page") || "1", 10)
+    const page = isNaN(parsedPage) ? 1 : Math.max(1, parsedPage)
+    
+    const parsedLimit = parseInt(searchParams.get("limit") || "20", 10)
+    const limit = isNaN(parsedLimit) ? 20 : Math.max(1, Math.min(100, parsedLimit))
     const professorFilter = searchParams.get("professor") || null
 
     type TaggedComment =
