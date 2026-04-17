@@ -267,61 +267,6 @@ export default function About() {
           </div>
         </div>
 
-        {/* Features */}
-        <div id="features" className="relative max-w-5xl mx-auto text-center mb-20 py-2 scroll-mt-24">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-8 h-72 w-72 -translate-x-1/2 rounded-full blur-[145px] opacity-80"
-            style={{ background: "radial-gradient(circle, rgba(239,178,21,0.16) 0%, rgba(239,178,21,0.05) 44%, transparent 74%)" }}
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute right-[-1rem] bottom-10 h-64 w-64 rounded-full blur-[140px] opacity-70"
-            style={{ background: "radial-gradient(circle, rgba(0,48,95,0.12) 0%, rgba(0,48,95,0.04) 46%, transparent 76%)" }}
-          />
-          <div className="relative z-10">
-            <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full static-glass-pill mb-4">
-              <span className="text-brand-gold text-sm font-semibold">Features</span>
-            </div>
-            <h2 className="text-3xl font-bold mb-6 text-brand-navy dark:text-white">What Coursify Offers</h2>
-            <p className="mb-10 text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Everything you need to make smarter course decisions, all in one place.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-2">
-              <div className="static-glass-card rounded-2xl p-6">
-                <div className="w-12 h-12 bg-brand-navy/10 dark:bg-blue-400/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BarChart3 className="h-5 w-5 text-brand-navy dark:text-blue-400" />
-                </div>
-                <h3 className="font-bold text-lg text-brand-navy dark:text-white mb-3">Grade Distributions & Enrollment</h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  View historical course grade distributions and enrollment data to understand course difficulty and class sizes before you register.
-                </p>
-              </div>
-
-              <div className="static-glass-card rounded-2xl p-6">
-                <div className="w-12 h-12 bg-brand-red/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare className="h-5 w-5 text-brand-red" />
-                </div>
-                <h3 className="font-bold text-lg text-brand-navy dark:text-white mb-3">Real Student Comments</h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Read past student comments sourced from RateMyProfessors and Reddit to get honest, unfiltered perspectives on courses and professors.
-                </p>
-              </div>
-
-              <div className="static-glass-card rounded-2xl p-6">
-                <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Brain className="h-5 w-5 text-brand-gold" />
-                </div>
-                <h3 className="font-bold text-lg text-brand-navy dark:text-white mb-3">AI Chat Assistant</h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Chat with our custom AI trained on real student comments to get instant, personalized answers about any course or professor.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Meet the Team */}
         <div className="relative mb-20 py-2">
           <div
