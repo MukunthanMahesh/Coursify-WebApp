@@ -67,8 +67,9 @@ export default function OnboardingGuard({ children }: Props) {
         if (cancelled) return;
         const token = session?.session?.access_token;
         if (!token) {
-          checkedUserIdRef.current = userId;
-          setOnboardingDone(true); // can't check — let through
+          // No token yet — fail open but don't cache the result so the guard
+          // re-checks once the session fully hydrates on the next navigation.
+          setOnboardingDone(true);
           return;
         }
 
@@ -96,15 +97,14 @@ export default function OnboardingGuard({ children }: Props) {
             setOnboardingDone(true);
           }
         } else {
-          checkedUserIdRef.current = userId;
-          setOnboardingDone(true); // API error — let through
-        }
-      } catch {
-        // Fail open if network/API hangs so we don't trap the UI behind a spinner.
-        if (!cancelled) {
-          checkedUserIdRef.current = userId;
+          // API error — fail open but don't cache so a transient failure
+          // doesn't permanently disable onboarding enforcement this session.
           setOnboardingDone(true);
         }
+      } catch {
+        // Fail open on network/timeout — same: don't cache so a blip doesn't
+        // disable onboarding checks for the rest of the session.
+        if (!cancelled) setOnboardingDone(true);
       } finally {
         if (!cancelled) setChecking(false);
       }
