@@ -24,21 +24,29 @@ export default function OnboardingGuard({ children }: Props) {
 
   const [checking, setChecking] = useState(false);
   const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
+  const [checkedUserId, setCheckedUserId] = useState<string | null>(null);
 
+  const userId = user?.id ?? null;
   const isExemptPath = EXEMPT_PATHS.some((p) => pathname.startsWith(p));
 
   useEffect(() => {
-    // No user — nothing to check
+    // Auth still resolving — wait
     if (authLoading) return;
-    if (!user) {
+
+    // No user — reset and bail
+    if (!userId) {
       setOnboardingDone(null);
+      setCheckedUserId(null);
       return;
     }
+
     // Already on an exempt page — don't block
     if (isExemptPath) {
       setOnboardingDone(true);
       return;
     }
+
+    if (onboardingDone === true && checkedUserId === userId) return;
 
     let cancelled = false;
 
@@ -50,6 +58,7 @@ export default function OnboardingGuard({ children }: Props) {
         const token = session?.session?.access_token;
         if (!token) {
           setOnboardingDone(true); // can't check — let through
+          setCheckedUserId(userId);
           return;
         }
 
@@ -71,13 +80,18 @@ export default function OnboardingGuard({ children }: Props) {
             router.replace("/onboarding");
           } else {
             setOnboardingDone(true);
+            setCheckedUserId(userId);
           }
         } else {
           setOnboardingDone(true); // API error — let through
+          setCheckedUserId(userId);
         }
       } catch {
         // Fail open if network/API hangs so we don't trap the UI behind a spinner.
-        if (!cancelled) setOnboardingDone(true);
+        if (!cancelled) {
+          setOnboardingDone(true);
+          setCheckedUserId(userId);
+        }
       } finally {
         if (!cancelled) setChecking(false);
       }
@@ -87,7 +101,7 @@ export default function OnboardingGuard({ children }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [user, authLoading, pathname, isExemptPath, router]);
+  }, [userId, authLoading, pathname, isExemptPath, onboardingDone, checkedUserId, router]);
 
   // Auth still loading — show spinner
   if (authLoading) {
