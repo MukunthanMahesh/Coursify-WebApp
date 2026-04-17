@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ExternalLink, MessageSquare, User } from 'lucide-react';
@@ -50,8 +50,14 @@ export default function CourseCommentsPage() {
   const [rmpTotal, setRmpTotal] = useState(0);
   const [professorCounts, setProfessorCounts] = useState<Record<string, number>>({});
 
+  const requestCounter = useRef(0);
+
   const fetchPage = useCallback(async (tab: 'reddit' | 'rmp', page: number, professor: string | null) => {
     if (!courseCode) { setLoading(false); return; }
+    
+    requestCounter.current += 1;
+    const currentRequestId = requestCounter.current;
+    
     setLoading(true);
     try {
       const result: PaginatedCommentsResult = await getCommentsForCoursePaginated({
@@ -61,6 +67,10 @@ export default function CourseCommentsPage() {
         limit: commentsPerPage,
         professor: professor ?? undefined,
       });
+      
+      // Prevent stale response from overwriting newer state
+      if (requestCounter.current !== currentRequestId) return;
+
       setPaginatedComments(result.comments);
       setTotal(result.total);
       setTotalPages(result.totalPages);
@@ -70,7 +80,9 @@ export default function CourseCommentsPage() {
     } catch (err) {
       console.error('Error fetching comments:', err);
     } finally {
-      setLoading(false);
+      if (requestCounter.current === currentRequestId) {
+        setLoading(false);
+      }
     }
   }, [courseCode, commentsPerPage]);
 

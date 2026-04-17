@@ -28,6 +28,8 @@ export function CourseComments({ courseCode }: CourseCommentsProps) {
           await getCommentsForCourse(courseCode, CAROUSEL_LIMIT);
         setRedditComments(reddit);
         setRmpComments(rmp);
+        setRedditCommentIndex(0);
+        setRmpCommentIndex(0);
         setRedditTotal(rTotal);
         setRmpTotal(rmpT);
       } catch (err) {

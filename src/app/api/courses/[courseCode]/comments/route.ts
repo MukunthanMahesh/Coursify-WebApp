@@ -44,7 +44,7 @@ async function getOrFetchComments(courseCode: string): Promise<CachedPayload> {
   if (cached) return cached
 
   if (!supabaseUrl || !supabaseKey) {
-    return { redditComments: [], rmpComments: [] }
+    throw new Error("Missing required Supabase environment variables for comments API")
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey)
