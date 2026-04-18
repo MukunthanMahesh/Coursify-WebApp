@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Pencil, Check, X, UploadCloud, RefreshCw, Info } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
+import { useAuthRedirect } from "@/lib/auth/use-auth-redirect";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-import { AUTH_TRANSIENT_DROP_DELAY_MS } from "@/lib/constants";
 import type { UserProfile, AccessStatus, DistributionUploadStatus } from "@/types";
 
 type UploadRow = {
@@ -127,20 +127,7 @@ export default function SettingsPage() {
     remaining: number
   } | null>(null);
 
-  useEffect(() => {
-    if (authLoading) return;
-    let timeout: ReturnType<typeof setTimeout> | undefined;
-    if (!user) {
-      // Add a brief delay so transient auth drops (e.g., during tab focus token refresh)
-      // don't cause an immediate redirect, avoiding a flicker effect.
-      timeout = setTimeout(() => {
-        router.push("/sign-in");
-      }, AUTH_TRANSIENT_DROP_DELAY_MS);
-    }
-    return () => {
-      if (timeout !== undefined) clearTimeout(timeout);
-    };
-  }, [user, authLoading, router]);
+  useAuthRedirect();
 
   const load = async (silent = false) => {
     if (!user) return;
