@@ -18,23 +18,24 @@ const TITLE_MAX = 200
 const DESC_MAX = 5000
 
 export default function BugReportPage() {
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [state, setState] = useState<State>({ phase: "idle" })
 
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout> | undefined;
+    if (authLoading) return
+    let timeout: ReturnType<typeof setTimeout> | undefined
     if (user === null) {
       timeout = setTimeout(() => {
         router.push("/sign-in")
       }, 500)
     }
     return () => {
-      if (timeout) clearTimeout(timeout)
+      if (timeout !== undefined) clearTimeout(timeout)
     }
-  }, [user, router])
+  }, [user, authLoading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

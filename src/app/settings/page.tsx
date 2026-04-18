@@ -135,7 +135,7 @@ export default function SettingsPage() {
       }, 500);
     }
     return () => {
-      if (timeout) clearTimeout(timeout);
+      if (timeout !== undefined) clearTimeout(timeout);
     };
   }, [user, authLoading, router]);
 
