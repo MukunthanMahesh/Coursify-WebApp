@@ -130,6 +130,8 @@ export default function SettingsPage() {
     if (authLoading) return;
     let timeout: ReturnType<typeof setTimeout> | undefined;
     if (!user) {
+      // Add a brief delay so transient auth drops (e.g., during tab focus token refresh)
+      // don't cause an immediate redirect, avoiding a flicker effect.
       timeout = setTimeout(() => {
         router.push("/sign-in");
       }, 500);
