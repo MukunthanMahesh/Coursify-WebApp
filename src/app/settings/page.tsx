@@ -127,9 +127,14 @@ export default function SettingsPage() {
   } | null>(null);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/sign-in");
+    if (authLoading) return;
+    let timeout: NodeJS.Timeout;
+    if (!user) {
+      timeout = setTimeout(() => {
+        router.push("/sign-in");
+      }, 500);
     }
+    return () => clearTimeout(timeout);
   }, [user, authLoading, router]);
 
   const load = async (silent = false) => {
