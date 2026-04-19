@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -24,6 +24,16 @@ export default function SignIn() {
     () => getSafeRedirectPath(searchParams.get("redirect"), "/"),
     [searchParams]
   );
+
+  useEffect(() => {
+    if (searchParams.get("error") === "link_expired") {
+      toast({
+        title: "Verification link expired",
+        description: "Your email link has expired or already been used. Please sign in or request a new link.",
+        variant: "destructive",
+      });
+    }
+  }, [searchParams]);
 
   const signUpHref = useMemo(
     () => buildAuthHref("/sign-up", nextPath),
