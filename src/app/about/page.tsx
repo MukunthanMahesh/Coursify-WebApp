@@ -11,7 +11,6 @@ import {
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import type { LucideIcon } from "lucide-react"
-import { ScrollButton } from "./_components/ScrollButton"
 import { EmailCopyButton } from "./_components/EmailCopyButton"
 import { CommunityContributors } from "./_components/CommunityContributors"
 import Footer from "@/components/Footer"
@@ -167,7 +166,6 @@ export default function About() {
           <p className="text-xl text-muted-foreground mb-6">
             Helping Queen&apos;s University students make informed academic decisions through data and AI.
           </p>
-          <ScrollButton />
         </div>
 
         {/* Mission & Stats */}
