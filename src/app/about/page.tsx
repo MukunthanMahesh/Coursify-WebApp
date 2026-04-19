@@ -8,6 +8,7 @@ import {
   Sparkles,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 import type { LucideIcon } from "lucide-react"
 import { EmailCopyButton } from "./_components/EmailCopyButton"
 import { CommunityContributors } from "./_components/CommunityContributors"
@@ -184,7 +185,7 @@ export default function About() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-medium bg-[#FFDD00] hover:bg-[#FFDD00]/90 text-gray-900 transition-colors duration-200"
               >
-                <span className="text-lg leading-none">☕</span>
+                <Image src="/bmc-logo.svg" alt="" width={14} height={20} />
                 Buy us a coffee
               </a>
             </div>
