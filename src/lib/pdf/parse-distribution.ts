@@ -57,39 +57,64 @@ function calculateGpa(percentages: number[]): number {
 }
 
 /**
+ * Normalize a row for parsing: drop % suffixes on numbers and thousands
+ * separators inside integers (e.g. "1,500" → "1500"), and convert a few
+ * common "empty cell" glyphs to zero so a single missing cell doesn't
+ * kill the whole row.
+ */
+function normalizeRow(text: string): string {
+  return text
+    .replace(/(\d),(\d{3}(?:\b|\D))/g, "$1$2")
+    .replace(/(\d(?:\.\d+)?)%/g, "$1")
+    .replace(/\s[—–−-](?=\s|$)/g, " 0")
+    .replace(/\bN\/A\b/gi, "0");
+}
+
+/**
  * Parse a single line of text into a course row, or return null if it doesn't match.
  */
 function parseCourseLine(line: string): ParsedCourseRow | null {
-  const trimmed = line.trim();
+  const trimmed = normalizeRow(line.trim());
   if (!trimmed) return null;
 
-  // Match course code at start: 2-5 uppercase letters, space, 3 digits, optional letter suffix
-  const codeMatch = trimmed.match(/^([A-Z]{2,5}\s+\d{3}[A-Z]?)\s+/);
+  // Match course code at start: 2-5 uppercase letters, space, 3-4 digits, optional letter suffix
+  const codeMatch = trimmed.match(/^([A-Z]{2,5}\s+\d{3,4}[A-Z]?)\s+/);
   if (!codeMatch) return null;
 
   // Strip trailing letter suffix from full-year courses (e.g. "MATH 121B" → "MATH 121")
   const courseCode = codeMatch[1].replace(/[A-Z]$/, "");
   const rest = trimmed.slice(codeMatch[0].length).trim();
 
-  // Split remaining tokens - last 14 are: enrollment + 13 grade percentages
   const tokens = rest.split(/\s+/);
   if (tokens.length < 15) return null; // at least 1 description word + 14 numbers
 
-  const numericTokens = tokens.slice(-14);
-  const descriptionTokens = tokens.slice(0, -14);
+  // Walk from the right, collecting numeric tokens until we have 14.
+  // This is resilient to descriptions that contain numbers (e.g. "Chemistry 2").
+  const numericTokens: string[] = [];
+  let cut = tokens.length;
+  for (let i = tokens.length - 1; i >= 0 && numericTokens.length < 14; i--) {
+    if (/^-?\d+(?:\.\d+)?$/.test(tokens[i])) {
+      numericTokens.unshift(tokens[i]);
+      cut = i;
+    } else {
+      break;
+    }
+  }
+  if (numericTokens.length !== 14) return null;
 
-  // All 14 must be valid numbers
+  const descriptionTokens = tokens.slice(0, cut);
+  if (descriptionTokens.length === 0) return null;
+
   const numbers = numericTokens.map(Number);
-  if (numbers.some(isNaN)) return null;
-
   const enrollment = Math.round(numbers[0]);
+  if (enrollment <= 0) return null;
+
   const gradePercentages = numbers.slice(1); // 13 values
 
-  if (gradePercentages.length !== 13) return null;
-
-  // Validate percentages sum roughly to 100 (allow rounding tolerance)
+  // Validate percentages sum roughly to 100 (widened tolerance for rounding
+  // across 13 cells in older SOLUS exports)
   const sum = gradePercentages.reduce((a, b) => a + b, 0);
-  if (sum < 90 || sum > 110) return null;
+  if (sum < 85 || sum > 115) return null;
 
   return {
     course_code: courseCode,
@@ -139,21 +164,47 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
     useWorkerFetch: false,
   }).promise;
 
+  // Group text items by their baseline Y coordinate and sort by X within each
+  // row. This avoids relying on `item.hasEOL` (unreliable across SOLUS PDF
+  // generator versions — rows often merge) and on intrinsic whitespace
+  // between items (tabular layouts put each cell in its own item with no
+  // trailing space, which would otherwise glue cells together).
+  const Y_EPSILON = 2; // points — tolerance for same-row detection
   const textParts: string[] = [];
+
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
     const content = await page.getTextContent();
-    let line = "";
+
+    const rows: Array<{ y: number; items: Array<{ x: number; str: string }> }> = [];
+
     for (const item of content.items as any[]) {
-      if (item.str !== undefined) {
-        line += item.str;
-        if (item.hasEOL) {
-          textParts.push(line);
-          line = "";
-        }
+      if (typeof item.str !== "string" || item.str.length === 0) continue;
+      const transform = item.transform as number[] | undefined;
+      if (!transform || transform.length < 6) continue;
+      const x = transform[4];
+      const y = transform[5];
+
+      // Find an existing row within Y_EPSILON, else start a new one.
+      let row = rows.find((r) => Math.abs(r.y - y) <= Y_EPSILON);
+      if (!row) {
+        row = { y, items: [] };
+        rows.push(row);
       }
+      row.items.push({ x, str: item.str });
     }
-    if (line) textParts.push(line);
+
+    // PDF coordinates: Y increases upward, so top-to-bottom is descending Y.
+    rows.sort((a, b) => b.y - a.y);
+    for (const row of rows) {
+      row.items.sort((a, b) => a.x - b.x);
+      const line = row.items
+        .map((it) => it.str)
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (line) textParts.push(line);
+    }
   }
 
   await doc.destroy();

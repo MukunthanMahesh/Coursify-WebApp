@@ -116,13 +116,6 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-12">
-      {/* Ambient blobs */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="liquid-blob w-[500px] h-[400px] bg-brand-navy" style={{ top: "-5%", left: "-8%", animationDelay: "0s" }} />
-        <div className="liquid-blob-alt w-[400px] h-[450px] bg-brand-red" style={{ bottom: "-10%", right: "-5%", animationDelay: "-4s" }} />
-        <div className="liquid-blob w-[350px] h-[350px] bg-brand-gold" style={{ top: "40%", left: "45%", animationDelay: "-8s" }} />
-      </div>
-
       {/* Card */}
       <motion.div
         className="relative z-10 glass-modal-panel w-full max-w-md rounded-[1.75rem] p-7 sm:p-8"
