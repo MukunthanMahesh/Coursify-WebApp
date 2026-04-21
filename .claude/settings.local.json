@@ -9,7 +9,9 @@
       "Bash(awk '{print $NF}')",
       "Bash(npm install *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(npx next *)",
+      "Bash(npx tsc *)"
     ]
   }
 }
