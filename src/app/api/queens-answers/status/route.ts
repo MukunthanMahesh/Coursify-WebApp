@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
-import { getConfirmedAccessStatus } from "@/app/api/_lib/confirmed-access-status"
-import { readUsage } from "@/lib/queens-answers/rate-limit"
+import { redis } from "@/lib/redis"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || ""
 
+function getTierLimit(semestersCompleted: number): number {
+  if (semestersCompleted <= 1) return 2
+  if (semestersCompleted <= 4) return 3
+  return 4
+}
+
 export async function GET(request: NextRequest) {
   if (!supabaseUrl || !supabaseServiceKey) {
-    return NextResponse.json(
-      { error: "Server configuration error", reason: "dependency_failure", dependency: "supabase" },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey, {
@@ -32,43 +34,26 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Authentication failed" }, { status: 401 })
   }
 
-  const accessResult = await getConfirmedAccessStatus(supabase, user.id)
-  if (!accessResult.ok) {
-    return NextResponse.json(
-      {
-        error: accessResult.error,
-        reason: accessResult.reason,
-        dependency: accessResult.dependency,
-      },
-      { status: 503 },
-    )
+  const { data: profile, error: profileError } = await supabase
+    .from("user_profiles")
+    .select("semesters_completed")
+    .eq("id", user.id)
+    .single()
+
+  if (profileError) {
+    console.warn("[queens-answers/status] profile fetch error:", profileError.message)
   }
 
-  if (!accessResult.status.has_access) {
-    return NextResponse.json(
-      {
-        error: "Queen's Answers access is locked until your contribution requirements are met.",
-        reason: "entitlement_required",
-      },
-      { status: 403 },
-    )
-  }
+  const semestersCompleted = profile?.semesters_completed ?? 0
+  const dailyLimit = getTierLimit(semestersCompleted)
+  const userKey = `qa:user:${user.id}`
 
-  const usageResult = await readUsage(user.id, accessResult.semestersCompleted)
-  if (!usageResult.ok) {
-    return NextResponse.json(
-      {
-        error: usageResult.error,
-        reason: usageResult.reason,
-        dependency: usageResult.dependency,
-      },
-      { status: 503 },
-    )
-  }
+  const used = await redis.get<number>(userKey)
+  const usedNum = used ?? 0
 
   return NextResponse.json({
-    dailyLimit: usageResult.usage.dailyLimit,
-    used: usageResult.usage.used,
-    remaining: usageResult.usage.remaining,
+    dailyLimit,
+    used: usedNum,
+    remaining: Math.max(0, dailyLimit - usedNum),
   })
 }

@@ -9,35 +9,9 @@ export const runtime = "nodejs";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || "";
 
-function failureResponse(
-  response: Omit<UploadDistributionResponse, "success" | "inserted" | "skipped" | "duplicates" | "errors"> &
-    Partial<Pick<UploadDistributionResponse, "inserted" | "skipped" | "duplicates">> & {
-      errors: string[];
-      reason?: UploadDistributionResponse["reason"];
-    },
-  status: number,
-) {
-  return NextResponse.json(
-    {
-      success: false,
-      inserted: response.inserted ?? 0,
-      skipped: response.skipped ?? [],
-      duplicates: response.duplicates ?? [],
-      ...response,
-    },
-    { status },
-  );
-}
-
 export async function POST(request: NextRequest) {
-  if (!supabaseUrl || !supabaseServiceKey) {
-    return failureResponse(
-      {
-        errors: ["Upload service is temporarily unavailable."],
-        reason: "dependency_failure",
-      },
-      500,
-    );
+  if (!supabaseServiceKey) {
+    return NextResponse.json({ success: false, errors: ["Server configuration error: missing service key."] }, { status: 500 });
   }
   const supabase = createClient(supabaseUrl, supabaseServiceKey, {
     auth: { persistSession: false },
@@ -104,7 +78,7 @@ export async function POST(request: NextRequest) {
   const term = validation.term!;
 
   // 6. Check if this user already has a processed upload for this term
-  const existingUserUploadResult = await supabase
+  const { data: existingUserUpload } = await supabase
     .from("distribution_uploads")
     .select("id")
     .eq("user_id", user.id)
@@ -112,19 +86,8 @@ export async function POST(request: NextRequest) {
     .eq("status", "processed")
     .maybeSingle();
 
-  if (existingUserUploadResult.error) {
-    return failureResponse(
-      {
-        term,
-        errors: ["We couldn't verify whether you've already uploaded this term. Please try again shortly."],
-        reason: "dependency_failure",
-      },
-      503,
-    );
-  }
-
-  if (existingUserUploadResult.data) {
-    const duplicateAuditInsert = await supabase.from("distribution_uploads").insert({
+  if (existingUserUpload) {
+    await supabase.from("distribution_uploads").insert({
       user_id: user.id,
       file_path: `${user.id}/${Date.now()}_${file.name}`,
       original_filename: file.name,
@@ -132,19 +95,10 @@ export async function POST(request: NextRequest) {
       status: "already_uploaded",
       processed_at: new Date().toISOString(),
     });
-
-    if (duplicateAuditInsert.error) {
-      console.error("[upload-distribution] failed to record duplicate upload audit row:", duplicateAuditInsert.error);
-    }
-
-    return failureResponse(
-      {
-        term,
-        errors: [`You have already submitted a grade distribution for ${term}. Each term can only be submitted once.`],
-        reason: "already_uploaded",
-      },
-      400,
-    );
+    return NextResponse.json({
+      success: false,
+      errors: [`You have already submitted a grade distribution for ${term}. Each term can only be submitted once.`],
+    }, { status: 400 });
   }
 
   // 7. Parse course rows
@@ -161,14 +115,7 @@ export async function POST(request: NextRequest) {
     .in("course_code", courseCodes);
 
   if (lookupError) {
-    return failureResponse(
-      {
-        term,
-        errors: ["We couldn't verify the uploaded courses right now. Please try again shortly."],
-        reason: "dependency_failure",
-      },
-      503,
-    );
+    return NextResponse.json({ success: false, errors: ["Database error looking up courses."] }, { status: 500 });
   }
 
   const codeToId = new Map<string, string>();
@@ -179,24 +126,13 @@ export async function POST(request: NextRequest) {
   let existingSet = new Set<string>();
 
   if (matchedIds.length > 0) {
-    const existingDistsResult = await supabase
+    const { data: existingDists } = await supabase
       .from("course_distributions")
       .select("course_id")
       .in("course_id", matchedIds)
       .eq("term", term);
 
-    if (existingDistsResult.error) {
-      return failureResponse(
-        {
-          term,
-          errors: ["We couldn't verify existing distributions for this term. Please try again shortly."],
-          reason: "dependency_failure",
-        },
-        503,
-      );
-    }
-
-    existingSet = new Set(existingDistsResult.data?.map((d) => d.course_id) || []);
+    existingSet = new Set(existingDists?.map((d) => d.course_id) || []);
   }
 
   // 10. Build insert batch
@@ -239,15 +175,14 @@ export async function POST(request: NextRequest) {
       .insert(toInsert);
 
     if (insertError) {
-      console.error("[upload-distribution] insert distributions failed:", insertError.message);
-      errors.push("Some distributions could not be saved. Please try again shortly.");
+      errors.push(`Failed to insert distributions: ${insertError.message}`);
     } else {
       inserted = toInsert.length;
     }
   }
 
   // 12. Record the upload
-  const uploadRecordResult = await supabase.from("distribution_uploads").insert({
+  await supabase.from("distribution_uploads").insert({
     user_id: user.id,
     file_path: `${user.id}/${Date.now()}_${file.name}`,
     original_filename: file.name,
@@ -256,41 +191,8 @@ export async function POST(request: NextRequest) {
     processed_at: new Date().toISOString(),
   });
 
-  if (uploadRecordResult.error) {
-    return failureResponse(
-      {
-        term,
-        inserted,
-        skipped,
-        duplicates,
-        errors: [
-          inserted > 0
-            ? "We processed the distribution data, but couldn't record your upload status. Please avoid retrying and contact support."
-            : "We couldn't record your upload status right now. Please try again shortly."
-        ],
-        reason: inserted > 0 ? "partial_failure" : "dependency_failure",
-      },
-      503,
-    );
-  }
-
-  if (errors.length > 0) {
-    return failureResponse(
-      {
-        term,
-        inserted,
-        skipped,
-        duplicates,
-        // Return only user-safe messages; raw Supabase details are logged server-side above
-        errors: ["Some distributions could not be saved. Please try again shortly."],
-        reason: "dependency_failure",
-      },
-      503,
-    );
-  }
-
   const response: UploadDistributionResponse = {
-    success: true,
+    success: errors.length === 0,
     term,
     inserted,
     skipped,
@@ -299,15 +201,17 @@ export async function POST(request: NextRequest) {
   };
 
   // Invalidate user-specific and affected course caches on successful upload
-  const invalidations: Promise<unknown>[] = [
-    redis.del(`access_status:${user.id}`),
-    redis.del(`uploads:${user.id}`),
-    redis.delPattern("courses:*"),
-  ];
-  for (const code of courseCodes) {
-    invalidations.push(redis.del(`course:${code}`));
+  if (errors.length === 0) {
+    const invalidations: Promise<unknown>[] = [
+      redis.del(`access_status:${user.id}`),
+      redis.del(`uploads:${user.id}`),
+      redis.delPattern("courses:*"),
+    ];
+    for (const code of courseCodes) {
+      invalidations.push(redis.del(`course:${code}`));
+    }
+    await Promise.all(invalidations);
   }
-  await Promise.all(invalidations);
 
   return NextResponse.json(response);
 }
