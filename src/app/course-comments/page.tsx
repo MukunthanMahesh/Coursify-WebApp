@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ExternalLink, MessageSquare, User } from 'lucide-react';
+import { ArrowLeft, ExternalLink, MessageSquare, User, ChevronDown, X } from 'lucide-react';
 import { getCommentsForCoursePaginated } from '@/lib/db';
 import type { RedditComment, RmpComment, PaginatedCommentsResult } from '@/lib/db';
 import { useMotionTier, type MotionTier } from '@/lib/motion-prefs';
@@ -36,8 +36,9 @@ export default function CourseCommentsPage() {
   const liteMotion = motionTier === 'lite';
   const { staggerContainer, cardVariant } = listMotionVariants(motionTier);
   const courseCode = searchParams.get('courseCode') || '';
+  const rawTab = searchParams.get('tab');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'reddit' | 'rmp'>('rmp');
+  const [activeTab, setActiveTab] = useState<'reddit' | 'rmp'>(rawTab === 'reddit' ? 'reddit' : 'rmp');
   const [selectedProfessor, setSelectedProfessor] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const commentsPerPage = 8;
@@ -49,6 +50,7 @@ export default function CourseCommentsPage() {
   const [redditTotal, setRedditTotal] = useState(0);
   const [rmpTotal, setRmpTotal] = useState(0);
   const [professorCounts, setProfessorCounts] = useState<Record<string, number>>({});
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const requestCounter = useRef(0);
 
@@ -116,6 +118,9 @@ export default function CourseCommentsPage() {
     setActiveTab(tab);
     setCurrentPage(1);
     setSelectedProfessor(null);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`?${params.toString()}`, { scroll: false });
   };
 
   return (
@@ -229,22 +234,12 @@ export default function CourseCommentsPage() {
                 </div>
               </div>
 
-              {/* Source count pills */}
-              <div className="flex flex-wrap gap-2 pb-0.5">
-                <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold text-white/90 border border-white/15 bg-white/10">
-                  <svg viewBox="0 0 20 20" className="w-3.5 h-3.5 shrink-0">
-                    <circle fill="#FF4500" cx="10" cy="10" r="10" />
-                    <path fill="#fff" d="M16.67,10A1.46,1.46,0,0,0,14.2,9a7.12,7.12,0,0,0-3.85-1.23L11,4.65,13.14,5.1a1,1,0,1,0,.13-.61L10.82,4a.31.31,0,0,0-.37.24L9.71,7.71a7.14,7.14,0,0,0-3.9,1.23A1.46,1.46,0,1,0,4.2,11.33a2.87,2.87,0,0,0,0,.44c0,2.24,2.61,4.06,5.83,4.06s5.83-1.82,5.83-4.06a2.87,2.87,0,0,0,0,.44A1.46,1.46,0,0,0,16.67,10Zm-10,1a1,1,0,1,1,1,1A1,1,0,0,1,6.67,11Zm5.81,2.75a3.84,3.84,0,0,1-2.47.77,3.84,3.84,0,0,1-2.47-.77.27.27,0,0,1,.38-.38A3.27,3.27,0,0,0,10,14a3.28,3.28,0,0,0,2.09-.61.27.27,0,1,1,.38.38Zm-.18-1.71a1,1,0,1,1,1-1A1,1,0,0,1,12.29,12.08Z" />
-                  </svg>
-                  <span>{redditTotal} Reddit</span>
-                </div>
-                <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold text-white/90 border border-white/15 bg-white/10">
-                  <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-white/20">
-                    <svg viewBox="0 0 20 20" fill="white" className="h-2 w-2">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
-                  </span>
-                  <span>{rmpTotal} RMP</span>
+              {/* Total comments pill */}
+              <div className="pb-0.5">
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-full font-bold border border-white/30 bg-white/95 shadow-[0_8px_24px_rgba(255,255,255,0.25)]">
+                  <MessageSquare className="h-3.5 w-3.5 text-brand-navy shrink-0" />
+                  <span className="text-sm text-brand-navy tabular-nums">{redditTotal + rmpTotal}</span>
+                  <span className="text-xs text-brand-navy/60 font-medium">total comments</span>
                 </div>
               </div>
             </div>
@@ -297,11 +292,6 @@ export default function CourseCommentsPage() {
               ) : (
                 tab.label
               )}
-              <span className={`text-xs px-2 py-0.5 rounded-full font-semibold shrink-0 ${
-                activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-gray-200/70 dark:bg-white/10 text-gray-500 dark:text-gray-400'
-              }`}>
-                {tab.count}
-              </span>
             </button>
           ))}
         </motion.div>
@@ -326,45 +316,63 @@ export default function CourseCommentsPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: liteMotion ? 0 : 0.35, delay: liteMotion ? 0 : 0.15 }}
               >
-                <div className="glass-card-deep rounded-2xl px-4 py-4 border border-brand-navy/10 dark:border-white/10 shadow-[0_4px_14px_rgba(0,48,95,0.08)] dark:shadow-none">
-                  <div className="flex items-center gap-2 mb-3">
-                    <User className="h-3.5 w-3.5 text-brand-navy/60 dark:text-white/60" />
-                    <span className="text-xs font-semibold text-brand-navy dark:text-white uppercase tracking-wider">Professor</span>
+                <div className="glass-card-deep rounded-2xl border border-brand-navy/10 dark:border-white/10 shadow-[0_4px_14px_rgba(0,48,95,0.08)] dark:shadow-none overflow-hidden">
+
+                  {/* Header — acts as toggle on mobile */}
+                  <button
+                    onClick={() => setSidebarOpen(prev => !prev)}
+                    className="w-full flex items-center gap-2 px-4 py-3.5 lg:pointer-events-none"
+                  >
+                    <User className="h-3.5 w-3.5 text-brand-navy/60 dark:text-white/60 flex-shrink-0" />
+                    <span className="text-xs font-semibold text-brand-navy dark:text-white uppercase tracking-wider flex-1 text-left">
+                      Filter by Professor
+                    </span>
+                    {selectedProfessor && (
+                      <span className="text-[10px] font-semibold bg-brand-navy dark:bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                        1 active
+                      </span>
+                    )}
+                    <ChevronDown
+                      className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform duration-200 lg:hidden ${sidebarOpen ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+
+                  {/* Body — always visible on lg, collapsible on mobile */}
+                  <div className={`${sidebarOpen ? 'block' : 'hidden'} lg:block border-t border-brand-navy/8 dark:border-white/8 px-2.5 pb-2.5 pt-2`}>
+                    {/* Clear filter */}
                     {selectedProfessor && (
                       <button
                         onClick={() => { setSelectedProfessor(null); setCurrentPage(1); }}
-                        className="ml-auto text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
-                        title="Clear filter"
+                        className="mb-2 w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-brand-red hover:text-red-700 dark:hover:text-red-400 transition-colors py-1.5 rounded-lg border border-dashed border-brand-red/40 hover:border-brand-red/70 bg-brand-red/5 hover:bg-brand-red/10"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
+                        <X className="h-3 w-3" />
+                        Clear filter
                       </button>
                     )}
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    {tabProfessors.map(prof => {
-                      const commentCount = professorCounts[prof] || 0;
-                      const isActive = selectedProfessor === prof;
-                      return (
-                        <button
-                          key={prof}
-                          onClick={() => { setSelectedProfessor(isActive ? null : prof); setCurrentPage(1); }}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 text-left ${
-                            isActive
-                              ? 'bg-brand-navy dark:bg-blue-600 text-white shadow-md shadow-[#00305f]/20 dark:shadow-blue-900/30'
-                              : 'bg-white/80 dark:bg-white/[0.06] text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-white/[0.12] border border-brand-navy/15 dark:border-white/10 shadow-[0_1px_4px_rgba(0,48,95,0.08)] dark:shadow-none'
-                          }`}
-                        >
-                          <span className="truncate mr-2">{prof}</span>
-                          <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0 ${
-                            isActive ? 'bg-white/20 text-white' : 'bg-gray-200/80 dark:bg-white/10 text-gray-500 dark:text-gray-400'
-                          }`}>
-                            {commentCount}
-                          </span>
-                        </button>
-                      );
-                    })}
+                    <div className="flex flex-col gap-1 max-h-64 overflow-y-auto pr-0.5">
+                      {tabProfessors.map(prof => {
+                        const commentCount = professorCounts[prof] || 0;
+                        const isActive = selectedProfessor === prof;
+                        return (
+                          <button
+                            key={prof}
+                            onClick={() => { setSelectedProfessor(isActive ? null : prof); setCurrentPage(1); }}
+                            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 text-left ${
+                              isActive
+                                ? 'bg-brand-navy dark:bg-blue-600 text-white shadow-sm shadow-[#00305f]/20 dark:shadow-blue-900/30'
+                                : 'bg-white/80 dark:bg-white/[0.06] text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-white/[0.12] border border-brand-navy/15 dark:border-white/10'
+                            }`}
+                          >
+                            <span className="truncate mr-2">{prof}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0 ${
+                              isActive ? 'bg-white/20 text-white' : 'bg-gray-200/80 dark:bg-white/10 text-gray-500 dark:text-gray-400'
+                            }`}>
+                              {commentCount}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </motion.aside>
