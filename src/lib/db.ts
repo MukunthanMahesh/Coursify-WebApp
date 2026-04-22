@@ -224,6 +224,7 @@ export interface RedditComment {
   tags: string[];
   upvotes: number;
   sentiment_label: string;
+  created_at: string | null;
 }
 
 export interface RmpComment {
@@ -235,6 +236,7 @@ export interface RmpComment {
   quality_rating: number;
   difficulty_rating: number;
   sentiment_label: string;
+  created_at: string | null;
 }
 
 export async function getCommentsForCourse(
