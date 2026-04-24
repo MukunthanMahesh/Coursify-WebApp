@@ -72,8 +72,7 @@ export function calculateAccessStatus({
   const needs_onboarding =
     !profile ||
     !profile.onboarding_completed ||
-    semestersCompleted === null ||
-    semestersCompleted === undefined
+    semestersCompleted === null
 
   const required_uploads = needs_onboarding ? 0 : Math.min(semestersCompleted ?? 0, 6)
   const is_exempt = required_uploads === 0
