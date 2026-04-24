@@ -198,6 +198,14 @@ export default function SignIn() {
                   lite ? { duration: 0 } : { duration: 0.5, delay: 0.5 }
                 }
               >
+                <div className="flex items-center w-full gap-3 mt-1">
+                  <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    Don&apos;t have an account?
+                  </span>
+                  <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                </div>
+
                 <Link
                   href={signUpHref}
                   className="w-full inline-flex items-center justify-center rounded-2xl py-4 text-sm font-medium text-brand-navy dark:text-white border border-brand-navy/20 dark:border-white/10 bg-white/40 dark:bg-white/5 hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy/30 dark:focus-visible:ring-blue-400/30"
