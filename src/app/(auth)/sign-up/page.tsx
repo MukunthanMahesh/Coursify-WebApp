@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -11,6 +11,8 @@ import { buildAuthHref, getSafeRedirectPath } from "@/lib/auth/safe-redirect";
 import { Eye, EyeOff } from "lucide-react";
 import { useMotionTier } from "@/lib/motion-prefs";
 
+const RESEND_COOLDOWN_SECONDS = 60;
+
 export default function SignUp() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,9 +22,11 @@ export default function SignUp() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
   const [accountConflict, setAccountConflict] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, resendVerificationEmail } = useAuth();
   const lite = useMotionTier() === "lite";
   const searchParams = useSearchParams();
 
@@ -37,6 +41,17 @@ export default function SignUp() {
   );
 
   const isQueensEmail = (email: string) => email.endsWith("@queensu.ca");
+
+  useEffect(() => {
+    if (!showVerificationMessage) return;
+    setResendCooldown(RESEND_COOLDOWN_SECONDS);
+  }, [showVerificationMessage]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const id = setTimeout(() => setResendCooldown((s) => Math.max(0, s - 1)), 1000);
+    return () => clearTimeout(id);
+  }, [resendCooldown]);
 
   const resetAccount = async () => {
     if (!email) return;
@@ -65,6 +80,37 @@ export default function SignUp() {
       });
     } finally {
       setIsResetting(false);
+    }
+  };
+
+  const resendEmail = async () => {
+    if (!email) return;
+    if (resendCooldown > 0) return;
+    setIsResending(true);
+    try {
+      const { error } = await resendVerificationEmail(email);
+      if (error) {
+        toast({
+          title: "Couldn't resend email",
+          description: error.message ?? "Please try again in a moment.",
+          variant: "destructive",
+        });
+        return;
+      }
+      toast({
+        title: "Verification email resent",
+        description: "Check your inbox (and spam/junk) for the new link.",
+        variant: "success",
+      });
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+    } catch (error: any) {
+      toast({
+        title: "Couldn't resend email",
+        description: error.message ?? "Please try again in a moment.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -204,6 +250,23 @@ export default function SignUp() {
               >
                 Return to sign in
               </Link>
+
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={resendEmail}
+                  disabled={isResending || resendCooldown > 0}
+                  className="liquid-btn-red inline-flex items-center justify-center rounded-2xl px-6 py-3 text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <span className="relative z-10">
+                    {isResending
+                      ? "Resending..."
+                      : resendCooldown > 0
+                        ? `Resend in ${resendCooldown}s`
+                        : "Resend verification email"}
+                  </span>
+                </button>
+              </div>
             </motion.div>
           ) : (
             <>
