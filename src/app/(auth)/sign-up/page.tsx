@@ -191,6 +191,11 @@ export default function SignUp() {
                   . Please check your inbox and click the link to verify your
                   account.
                 </p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mt-3">
+                  It can take a couple of minutes to arrive. If you don&apos;t
+                  see it, check your spam/junk folder and wait at least 2
+                  minutes before trying again.
+                </p>
               </div>
               <Link
                 href={signInHref}
