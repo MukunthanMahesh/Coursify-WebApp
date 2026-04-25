@@ -2,7 +2,7 @@ import "server-only";
 
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import type { NextRequest } from "next/server";
-import type { Database } from "@/types/database.types";
+import type { Database } from "@/lib/database.types";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || "";
@@ -35,10 +35,6 @@ export async function getAuthenticatedSupabaseFromRequest(
     };
   }
 
-  const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey, {
-    auth: { persistSession: false },
-  });
-
   const authHeader = request.headers.get("Authorization");
   const token = authHeader?.match(/^Bearer\s+(\S+)$/i)?.[1];
   if (!token) {
@@ -48,6 +44,10 @@ export async function getAuthenticatedSupabaseFromRequest(
       error: "Unauthorized",
     };
   }
+
+  const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey, {
+    auth: { persistSession: false },
+  });
 
   const {
     data: { user },
