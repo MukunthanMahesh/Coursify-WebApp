@@ -71,9 +71,14 @@ describe("course query validation", () => {
     expect(() => parseCourseListQuery(new URLSearchParams({ availability: "data,private" }))).toThrow()
   })
 
-  it("rejects filter-control characters before course list .or filters are built", () => {
-    expect(() => parseCourseListQuery(new URLSearchParams({ search: "math,course_code.not.is.null" }))).toThrow()
-    expect(() => parseCourseListQuery(new URLSearchParams({ search: "math(121)" }))).toThrow()
+  it("normalizes course search filter-control characters before .or filters are built", () => {
+    const parsed = parseCourseListQuery(new URLSearchParams({ search: "MATH (121), CISC" }))
+
+    expect(parsed.search).toBe("MATH 121 CISC")
+    expect(parsed.search).not.toMatch(/[(),]/)
+  })
+
+  it("rejects unsafe subject filters before course list .or filters are built", () => {
     expect(() => parseCourseListQuery(new URLSearchParams({ subjects: "CISC),course_code.not.is.null" }))).toThrow()
   })
 

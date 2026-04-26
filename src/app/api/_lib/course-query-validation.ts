@@ -6,10 +6,12 @@ const AVAILABILITY_FILTERS = ["data", "comments"] as const;
 const COMMENT_MODES = ["preview", "paginated"] as const;
 const COMMENT_SOURCES = ["reddit", "rmp", "all"] as const;
 
+function normalizeCourseSearchText(value: string): string {
+  return value.replace(/[(),]/g, " ").replace(/\s+/g, " ").trim();
+}
+
 const boundedText = z.string().trim().max(120);
-const courseSearchText = boundedText.refine((value) => !/[(),]/.test(value), {
-  message: "search contains unsupported filter characters",
-});
+const courseSearchText = z.string().max(240).transform(normalizeCourseSearchText).pipe(boundedText);
 const listItem = z.string().trim().min(1).max(80);
 const subjectCode = z.string().trim().regex(/^[A-Za-z0-9]{1,12}$/);
 
