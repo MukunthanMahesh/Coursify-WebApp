@@ -3,7 +3,7 @@ import { UploadCloud, RefreshCw } from "lucide-react"
 import type { DistributionUploadStatus } from "@/types"
 import { UploadStatusBadge } from "./status-badge"
 
-type UploadRow = {
+export type UploadRow = {
   id: string
   original_filename: string
   status: DistributionUploadStatus

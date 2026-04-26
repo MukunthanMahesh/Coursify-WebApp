@@ -6,18 +6,10 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { useAuthRedirect } from "@/lib/auth/use-auth-redirect";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-import type { UserProfile, AccessStatus, DistributionUploadStatus } from "@/types";
+import type { UserProfile, AccessStatus } from "@/types";
 import { StatusBadge } from "./_components/status-badge";
-import { UploadHistory } from "./_components/upload-history";
+import { UploadHistory, type UploadRow } from "./_components/upload-history";
 import { SemesterEditor } from "./_components/semester-editor";
-
-type UploadRow = {
-  id: string;
-  original_filename: string;
-  status: DistributionUploadStatus;
-  term: string | null;
-  processed_at: string | null;
-};
 
 export default function SettingsPage() {
   const { user, isLoading: authLoading } = useAuth();
