@@ -15,7 +15,9 @@
       "mcp__plugin_supabase_supabase__list_tables",
       "Bash(xargs wc *)",
       "Bash(git checkout *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash([ -f \"C:/Users/Amaan/Projects/Coursify-WebApp/$file\" ])",
+      "Bash(git mv *)"
     ]
   }
 }

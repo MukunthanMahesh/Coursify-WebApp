@@ -1,6 +1,6 @@
 import { type CSSProperties } from "react";
 import Link from "next/link";
-import Footer from "@/components/Footer";
+import Footer from "@/components/footer";
 import {
   Brain,
   BarChart,
