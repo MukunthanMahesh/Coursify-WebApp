@@ -11,7 +11,6 @@ import {
 } from 'recharts';
 import { getCourseByCode } from '@/lib/db';
 import type { CourseWithStats } from '@/types';
-import { isUsingMockData } from "@/lib/db";
 import { CourseComments } from "@/components/course-comments";
 import {
   Select,
@@ -469,13 +468,6 @@ export default function CourseDetailPage() {
           background: rgba(35,35,35,0.45);
         }
       `}</style>
-
-      {/* Mock data banner */}
-      {isUsingMockData && (
-        <div className="fixed top-4 right-4 z-50 max-w-md bg-amber-100 border-l-4 border-amber-500 text-amber-700 p-4 shadow-md rounded-md">
-          <p className="text-sm">Using mock data. Configure Supabase connection to use real data.</p>
-        </div>
-      )}
 
       {/* ── Hero Header ── */}
       <motion.div
