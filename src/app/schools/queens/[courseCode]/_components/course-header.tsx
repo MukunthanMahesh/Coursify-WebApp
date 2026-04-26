@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { CourseWithStats } from '@/types'
 import type { MotionTier } from '@/lib/motion-prefs'
+import { pageMotionVariants } from '../_lib/gpa-utils'
 
 interface CourseHeaderProps {
   course: CourseWithStats
@@ -14,12 +15,7 @@ interface CourseHeaderProps {
 
 export function CourseHeader({ course, courseCode, motionTier, facultyName }: CourseHeaderProps) {
   const lite = motionTier === "lite";
-  const fadeIn = lite
-    ? { hidden: { opacity: 1 }, visible: { opacity: 1, transition: { duration: 0 } } }
-    : { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.5 } } };
-  const slideUp = lite
-    ? { hidden: { opacity: 1, y: 0 }, visible: { opacity: 1, y: 0, transition: { duration: 0 } } }
-    : { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } } };
+  const { fadeIn, slideUp } = pageMotionVariants(motionTier);
   const heroBreadcrumb = lite
     ? { hidden: { opacity: 1, x: 0 }, visible: { opacity: 1, x: 0, transition: { duration: 0 } } }
     : { hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { duration: 0.4, delay: 0.1 } } };
@@ -78,9 +74,7 @@ export function CourseHeader({ course, courseCode, motionTier, facultyName }: Co
             </div>
             <div className="bg-white/8 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
               <p className="text-white/85 text-sm leading-relaxed">
-                {course.description
-                  ? (typeof course.description === 'string' ? course.description : String(course.description))
-                  : 'No description available for this course.'}
+                {course.description ?? 'No description available for this course.'}
               </p>
             </div>
           </motion.div>
