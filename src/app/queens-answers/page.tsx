@@ -8,6 +8,7 @@ import { QUEENS_ANSWERS_DRAFT_STORAGE_KEY } from "@/constants/queens-answers"
 import { ArrowUp, Brain, Hammer, Search, Target, TriangleAlert } from "lucide-react"
 import { useMotionTier } from "@/lib/motion-prefs"
 import { useAuth } from "@/lib/auth/auth-context"
+import { useAuthRedirect } from "@/lib/auth/use-auth-redirect"
 import { getSupabaseClient } from "@/lib/supabase/client"
 import { buildAuthHref } from "@/lib/auth/safe-redirect"
 import { AuthModal } from "@/components/auth-modal"
@@ -66,6 +67,8 @@ function AIFeatures() {
   )
 
   const needsAuthToAsk = !authLoading && !user
+
+  useAuthRedirect(signInHref)
 
   const getToken = useCallback(async (): Promise<string | null> => {
     const { data: session } = await getSupabaseClient().auth.getSession()
@@ -284,6 +287,20 @@ function AIFeatures() {
   const openAuthModalForQuestion = () => {
     if (needsAuthToAsk) setAuthModalOpen(true)
   };
+
+  if (needsAuthToAsk) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[var(--page-bg)] px-4 text-center">
+        <div
+          className="h-10 w-10 animate-spin rounded-full border-4 border-brand-navy/20 border-t-brand-navy dark:border-blue-400/20 dark:border-t-blue-400"
+          aria-hidden="true"
+        />
+        <p className="text-sm text-gray-600 dark:text-gray-400" role="status" aria-live="polite">
+          Redirecting to sign in...
+        </p>
+      </div>
+    )
+  }
 
   return (
       <ContributionGate>
